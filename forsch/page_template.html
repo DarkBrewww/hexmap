@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kansas Morph Comparison</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f5f6f8;
+    --surface: #ffffff;
+    --fg: #15181d;
+    --fg-2: #48505b;
+    --fg-3: #7a828e;
+    --line: #dce0e6;
+    --accent: #2a6fc9;
+    --accent-soft: rgba(42, 111, 201, 0.16);
+    --warn: #c63a3a;
+    --warn-soft: rgba(198, 58, 58, 0.18);
+    --font-body: system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: ui-monospace, "Cascadia Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0f1114;
+      --surface: #171a1f;
+      --fg: #e6e8eb;
+      --fg-2: #a8afb9;
+      --fg-3: #7c8490;
+      --line: #2a2f37;
+      --accent: #5c9cea;
+      --accent-soft: rgba(92, 156, 234, 0.20);
+      --warn: #e26a6a;
+      --warn-soft: rgba(226, 106, 106, 0.22);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0f1114;
+    --surface: #171a1f;
+    --fg: #e6e8eb;
+    --fg-2: #a8afb9;
+    --fg-3: #7c8490;
+    --line: #2a2f37;
+    --accent: #5c9cea;
+    --accent-soft: rgba(92, 156, 234, 0.20);
+    --warn: #e26a6a;
+    --warn-soft: rgba(226, 106, 106, 0.22);
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 var(--font-body); }
+  main { max-width: 1240px; margin: 0 auto; padding: 20px 16px 28px; display: grid; gap: 12px; }
+  h1 { font-size: 20px; font-weight: 650; margin: 0; }
+  h2 { font-size: 15px; font-weight: 650; margin: 0 0 4px; }
+  .sub { color: var(--fg-2); margin: 2px 0 0; max-width: 96ch; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; color: var(--fg-2); }
+  .controls label { display: inline-flex; align-items: center; gap: 8px; }
+  output { font-family: var(--font-mono); font-size: 13px; color: var(--fg); font-variant-numeric: tabular-nums; min-width: 3em; }
+  button { font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 7px; padding: 6px 12px; cursor: pointer; }
+  button:hover { border-color: var(--fg-3); }
+  button.primary { background: var(--fg); color: var(--surface); border-color: var(--fg); min-width: 72px; }
+  input[type="range"] { accent-color: var(--accent); width: 220px; }
+  input[type="checkbox"] { accent-color: var(--accent); }
+  :is(button, input):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+  .stage { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; min-width: 0; }
+  .how { color: var(--fg-2); font-size: 13.5px; margin: 0 0 6px; min-height: 2.9em; }
+  .stage svg { display: block; width: 100%; height: auto; }
+  .stats { margin: 6px 0 0; color: var(--fg-2); font-size: 13.5px; font-variant-numeric: tabular-nums; }
+  .stats b { color: var(--fg); font-weight: 600; }
+  .stats .bad { color: var(--warn); font-weight: 600; }
+  .d-hex { fill: none; stroke: var(--fg-2); stroke-width: 1.5; stroke-dasharray: 6 4; vector-effect: non-scaling-stroke; }
+  .d-orig { fill: none; stroke: var(--fg-3); stroke-opacity: 0.7; stroke-width: 1; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .d-paths { fill: none; stroke: var(--fg-3); stroke-opacity: 0.5; stroke-width: 0.8; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .d-shape { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.8; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .d-shape.d-crossing { fill: var(--warn-soft); stroke: var(--warn); }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--fg-2); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend svg { width: 22px; height: 12px; flex: none; }
+  details { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  summary { cursor: pointer; font-weight: 600; }
+  details p { margin: 8px 0 0; color: var(--fg-2); max-width: 100ch; }
+  code { font-family: var(--font-mono); font-size: 0.92em; }
+  footer { color: var(--fg-3); font-size: 12.5px; }
+  @media (max-width: 860px) { .pair { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Kansas's 1st: linear morph vs. Forsch et al.</h1>
+    <p class="sub">Same district, same hexagon, same clock. Both sides end on the district's hexagon at its grid position.</p>
+  </header>
+
+  <div class="controls">
+    <button id="play" class="primary" type="button">Play</button>
+    <label for="t">t <input id="t" type="range" min="0" max="1" step="0.001" value="0"><output id="t-val" for="t">0.00</output></label>
+    <label for="paths"><input id="paths" type="checkbox"> Paths</label>
+    <label for="slide"><input id="slide" type="checkbox" checked> Slide to grid position</label>
+  </div>
+
+  <div class="pair">
+    <section class="stage">
+      <h2>Linear (our baseline)</h2>
+      <p class="how">Every point of the outline moves in a straight line to its partner on the hexagon.</p>
+      <svg id="lin" role="img" aria-label="Linear morph of Kansas's 1st into its hexagon"></svg>
+      <p class="stats" id="lin-stats"></p>
+    </section>
+    <section class="stage">
+      <h2>Forsch et al. 2024 (their code)</h2>
+      <p class="how">The outline is made schematic first. Every vertex then moves along a schematic path at constant speed, so every in-between outline is schematic too.</p>
+      <svg id="fm" role="img" aria-label="Schematic morph of Kansas's 1st into its hexagon, computed with the code of Forsch et al."></svg>
+      <p class="stats" id="fm-stats"></p>
+    </section>
+  </div>
+
+  <div class="legend" aria-hidden="true">
+    <span><svg viewBox="0 0 22 12"><rect x="1" y="1" width="20" height="10" rx="2" class="d-shape"/></svg>outline at t</span>
+    <span><svg viewBox="0 0 22 12"><line x1="1" y1="6" x2="21" y2="6" class="d-orig"/></svg>district outline</span>
+    <span><svg viewBox="0 0 22 12"><line x1="1" y1="6" x2="21" y2="6" class="d-hex"/></svg>target hexagon</span>
+    <span><svg viewBox="0 0 22 12"><line x1="1" y1="6" x2="21" y2="6" class="d-paths" style="stroke-opacity:1"/></svg>path of each vertex</span>
+    <span><svg viewBox="0 0 22 12"><rect x="1" y="1" width="20" height="10" rx="2" class="d-shape d-crossing"/></svg>outline crossing itself</span>
+  </div>
+
+  <details>
+    <summary>How the right side was made</summary>
+    <p><b>Schematic outline.</b> __SCHEMATIC__</p>
+    <p><b>Directions.</b> Their code knows only rectilinear and octilinear directions. Before the run, x is squashed by tan 30°, which turns the hexagon's slanted sides into 45° sides; after the run it is stretched back. So the allowed directions here are 0°, 30°, 90° and 150°: the hexagon's three edge directions plus horizontal. "On allowed directions" below each side measures the share of the outline's length that runs in one of them (within 1°).</p>
+    <p><b>Hexagon inside, then a slide.</b> Their method morphs between outlines that are nested or overlap, while this district's hexagon sits about __SLIDE__ hex steps away on the grid. The hexagon is therefore placed inside the district where it has the most room, their code morphs onto it, and the slide to the grid position is added on top at constant speed. Untick "Slide to grid position" to see their morph alone.</p>
+    <p><b>Run.</b> __RUN__</p>
+  </details>
+
+  <footer>Forsch, Amann, Haunert (2024), Polyline morphing for animated schematic maps. Code: gitlab.igg.uni-bonn.de/forsch/traveltimemaps, tag "publication". District: Census cb_2024_us_cd119_20m, projected with d3.geoAlbersUsa as in index.html. Hex layout: Congressional District Health Dashboard, NYU Langone Health.</footer>
+</main>
+
+<script type="application/json" id="data">__DATA__</script>
+<script>
+(function () {
+  "use strict";
+  const D = JSON.parse(document.getElementById("data").textContent);
+  const NS = "http://www.w3.org/2000/svg";
+  const DURATION = 4000;
+  const ALLOWED = [0, 30, 90, 150], TOL = 1;
+
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, attrs, parent) => {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  };
+  const pts = (xs, ys) => { let s = ""; for (let i = 0; i < xs.length; i++) s += (i ? " " : "") + xs[i].toFixed(2) + "," + ys[i].toFixed(2); return s; };
+  const ringPts = (r) => r.map(([x, y]) => x.toFixed(2) + "," + y.toFixed(2)).join(" ");
+
+  // Share of the outline's length running in an allowed direction.
+  function onAllowed(xs, ys) {
+    let ok = 0, all = 0;
+    for (let i = 0, m = xs.length; i < m; i++) {
+      const j = (i + 1) % m, dx = xs[j] - xs[i], dy = ys[i] - ys[j];
+      const L = Math.hypot(dx, dy);
+      if (L < 1e-9) continue;
+      let a = Math.atan2(dy, dx) * 180 / Math.PI;
+      a = ((a % 180) + 180) % 180;
+      all += L;
+      if (ALLOWED.some((b) => Math.min(Math.abs(a - b), 180 - Math.abs(a - b)) <= TOL)) ok += L;
+    }
+    return all ? ok / all : 1;
+  }
+  // Same self-crossing test as index.html: proper crossings only, touching does not count.
+  function crossesItself(xs, ys) {
+    const m = xs.length, EPS = 1e-7;
+    const o = (a, b, c) => { const v = (xs[b] - xs[a]) * (ys[c] - ys[a]) - (ys[b] - ys[a]) * (xs[c] - xs[a]); return Math.abs(v) < EPS ? 0 : v; };
+    for (let a = 0; a < m; a++) {
+      for (let b = a + 2; b < m; b++) {
+        if (a === 0 && b === m - 1) continue;
+        const a2 = (a + 1) % m, b2 = (b + 1) % m;
+        if (o(a, a2, b) * o(a, a2, b2) < 0 && o(b, b2, a) * o(b, b2, a2) < 0) return true;
+      }
+    }
+    return false;
+  }
+
+  // ---- Linear side: precomputed pairs (index.html section 3, best phase) ----
+  const L = D.linear, nL = L.src.length / 2;
+  function linearAt(t) {
+    const xs = new Float64Array(nL), ys = new Float64Array(nL);
+    for (let i = 0; i < nL; i++) {
+      xs[i] = L.src[2 * i] + (L.dst[2 * i] - L.src[2 * i]) * t;
+      ys[i] = L.src[2 * i + 1] + (L.dst[2 * i + 1] - L.src[2 * i + 1]) * t;
+    }
+    return [xs, ys];
+  }
+
+  // ---- Forsch side: keyframes from their morph.svg, linear between keyframes ----
+  const F = D.forsch, KT = F.keyTimes;
+  const nF = F.states[0].length;
+  function forschAt(t, slide) {
+    let i = 0;
+    while (i < KT.length - 2 && t > KT[i + 1]) i++;
+    const span = KT[i + 1] - KT[i];
+    const u = span > 0 ? Math.min(1, Math.max(0, (t - KT[i]) / span)) : 1;
+    const A = F.states[i], B = F.states[i + 1];
+    const sx = slide ? F.slide[0] * t : 0, sy = slide ? F.slide[1] * t : 0;
+    const xs = new Float64Array(nF), ys = new Float64Array(nF);
+    for (let j = 0; j < nF; j++) {
+      xs[j] = A[j][0] + (B[j][0] - A[j][0]) * u + sx;
+      ys[j] = A[j][1] + (B[j][1] - A[j][1]) * u + sy;
+    }
+    return [xs, ys];
+  }
+
+  // ---- Views: one shared box that holds the district and the hexagon's grid position ----
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const [x, y] of D.outline.concat(D.hex)) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+  const pad = 6, vb = [x0 - pad, y0 - pad, x1 - x0 + 2 * pad, y1 - y0 + 2 * pad].map((v) => v.toFixed(2)).join(" ");
+
+  function makeView(svg) {
+    svg.setAttribute("viewBox", vb);
+    el("polygon", { points: ringPts(D.outline), class: "d-orig" }, svg);
+    const hex = el("polygon", { class: "d-hex" }, svg);
+    const paths = el("g", { class: "d-paths" }, svg);
+    const shape = el("polygon", { class: "d-shape" }, svg);
+    return { hex, paths, shape };
+  }
+  const VL = makeView($("lin")), VF = makeView($("fm"));
+  VL.hex.setAttribute("points", ringPts(D.hex));
+
+  // Paths of the vertices over the whole morph.
+  function drawPaths() {
+    VL.paths.textContent = ""; VF.paths.textContent = "";
+    if (!pathsIn.checked) return;
+    for (let i = 0; i < nL; i++) {
+      el("line", { x1: L.src[2 * i], y1: L.src[2 * i + 1], x2: L.dst[2 * i], y2: L.dst[2 * i + 1] }, VL.paths);
+    }
+    const slide = slideIn.checked;
+    for (let j = 0; j < nF; j++) {
+      const xs = [], ys = [];
+      for (let k = 0; k < KT.length; k++) {
+        xs.push(F.states[k][j][0] + (slide ? F.slide[0] * KT[k] : 0));
+        ys.push(F.states[k][j][1] + (slide ? F.slide[1] * KT[k] : 0));
+      }
+      el("polyline", { points: pts(xs, ys) }, VF.paths);
+    }
+  }
+
+  const tIn = $("t"), tOut = $("t-val"), playBtn = $("play"), pathsIn = $("paths"), slideIn = $("slide");
+  const pct = (v) => Math.round(v * 100) + "%";
+
+  function render() {
+    const t = +tIn.value, slide = slideIn.checked;
+    tOut.textContent = t.toFixed(2);
+    const [lx, ly] = linearAt(t);
+    const lCross = crossesItself(lx, ly);
+    VL.shape.setAttribute("points", pts(lx, ly));
+    VL.shape.classList.toggle("d-crossing", lCross);
+    $("lin-stats").innerHTML = `${nL} points. On allowed directions: <b>${pct(onAllowed(lx, ly))}</b>. Crosses itself: ${lCross ? '<span class="bad">yes</span>' : "<b>no</b>"}.`;
+
+    const [fx, fy] = forschAt(t, slide);
+    const fCross = crossesItself(fx, fy);
+    VF.shape.setAttribute("points", pts(fx, fy));
+    VF.shape.classList.toggle("d-crossing", fCross);
+    VF.hex.setAttribute("points", ringPts(slide ? D.hex : F.placedHex));
+    $("fm-stats").innerHTML = `${F.segments} segments to 6. On allowed directions: <b>${pct(onAllowed(fx, fy))}</b>. Crosses itself: ${fCross ? '<span class="bad">yes</span>' : "<b>no</b>"}.`;
+  }
+
+  let raf = 0, start = 0;
+  function stop() { cancelAnimationFrame(raf); raf = 0; playBtn.textContent = "Play"; }
+  function frame(now) {
+    const t = Math.min(1, (now - start) / DURATION);
+    tIn.value = String(t);
+    render();
+    if (t < 1) raf = requestAnimationFrame(frame); else stop();
+  }
+  playBtn.addEventListener("click", () => {
+    if (raf) { stop(); return; }
+    let t = +tIn.value;
+    if (t >= 1) t = 0;
+    start = performance.now() - t * DURATION;
+    playBtn.textContent = "Pause";
+    raf = requestAnimationFrame(frame);
+  });
+  tIn.addEventListener("input", () => { stop(); render(); });
+  pathsIn.addEventListener("change", drawPaths);
+  slideIn.addEventListener("change", () => { drawPaths(); render(); });
+  drawPaths();
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,966 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hexmap Morph Baseline</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7;
+    --surface: #fcfcfb;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --muted: #898781;
+    --hairline: #e1e0d9;
+    --axis: #c3c2b7;
+    --border: rgba(11, 11, 11, 0.10);
+    --accent: #2a78d6;
+    --hex-line: rgba(11, 11, 11, 0.55);
+    --control: #ffffff;
+    --control-hover: #f0efec;
+    --kept: #2a78d6;
+    --lost: #eb6834;
+    --new: #1baf7a;
+    --other: #e1e0d9;
+    --overlap: #d03b3b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page: #0d0d0d;
+      --surface: #1a1a19;
+      --ink: #ffffff;
+      --ink-2: #c3c2b7;
+      --muted: #898781;
+      --hairline: #2c2c2a;
+      --axis: #383835;
+      --border: rgba(255, 255, 255, 0.10);
+      --accent: #3987e5;
+      --hex-line: rgba(255, 255, 255, 0.6);
+      --control: #242423;
+      --control-hover: #2c2c2a;
+      --kept: #3987e5;
+      --lost: #d95926;
+      --new: #199e70;
+      --other: #2c2c2a;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --muted: #898781;
+    --hairline: #2c2c2a;
+    --axis: #383835;
+    --border: rgba(255, 255, 255, 0.10);
+    --accent: #3987e5;
+    --hex-line: rgba(255, 255, 255, 0.6);
+    --control: #242423;
+    --control-hover: #2c2c2a;
+    --kept: #3987e5;
+    --lost: #d95926;
+    --new: #199e70;
+    --other: #2c2c2a;
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 1440px; margin: 0 auto; padding: 24px 16px 32px; }
+  h1 { font-size: 20px; font-weight: 600; margin: 0 0 4px; }
+  .sub { color: var(--ink-2); margin: 0 0 16px; max-width: 86ch; }
+
+  .controls {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px;
+    margin-bottom: 12px;
+  }
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .seg button { border: 0; border-radius: 0; }
+  .seg button + button { border-left: 1px solid var(--border); }
+  button {
+    font: inherit; color: var(--ink); background: var(--control);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 6px 14px; cursor: pointer;
+  }
+  button:hover { background: var(--control-hover); }
+  button:disabled { color: var(--muted); cursor: default; }
+  button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .slider { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-2); }
+  .slider input { width: 220px; accent-color: var(--accent); }
+  .slider output { font-variant-numeric: tabular-nums; min-width: 3.2em; color: var(--ink); }
+  .check { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); cursor: pointer; }
+  .check input { accent-color: var(--accent); }
+  .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }
+
+  .legend { margin-left: auto; display: grid; gap: 4px; min-width: 220px; }
+  .legend-title { color: var(--ink-2); font-size: 12px; }
+  .legend-bar { height: 10px; border-radius: 3px; }
+  .legend-ticks { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--ink-2); }
+  .chip { display: inline-flex; align-items: center; gap: 5px; }
+  .chip b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  .stage { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+  figure.map {
+    position: relative; margin: 0;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden;
+  }
+  #map { display: block; width: 100%; height: auto; cursor: grab; touch-action: none; }
+  #map:active { cursor: grabbing; }
+  #overlap-canvas { position: absolute; left: 0; top: 0; pointer-events: none; }
+  .districts path {
+    stroke: var(--surface); stroke-width: 0.6; stroke-linejoin: round;
+    vector-effect: non-scaling-stroke; fill-opacity: 0.85; cursor: pointer;
+  }
+  .districts path.hover { stroke: var(--ink); stroke-width: 1.5; fill-opacity: 1; }
+  .districts path.selected { stroke: var(--ink); stroke-width: 2; fill-opacity: 1; }
+  .hex-outlines path {
+    fill: none; stroke: var(--hex-line); stroke-width: 0.8;
+    vector-effect: non-scaling-stroke; pointer-events: none;
+  }
+  .map-tools { position: absolute; right: 10px; top: 10px; display: flex; gap: 8px; align-items: center; }
+  .hint { color: var(--muted); font-size: 12px; }
+  .map-tools button { padding: 4px 10px; font-size: 12px; }
+
+  .tip {
+    position: absolute; pointer-events: none; z-index: 2;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--border); border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    padding: 8px 10px; font-size: 13px; line-height: 1.4; max-width: 340px;
+  }
+  .tip strong { display: block; font-weight: 600; }
+  .tip span { color: var(--ink-2); }
+  .tip .rel { color: var(--ink); }
+
+  .scores { display: grid; gap: 10px; }
+  .scores h2 { font-size: 15px; font-weight: 600; margin: 0; }
+  .scores-sub { color: var(--muted); font-size: 12px; margin: -6px 0 0; }
+  .charts { display: grid; gap: 10px; }
+  .chart { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px 4px; }
+  .chart-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .chart-title { font-weight: 600; font-size: 13px; }
+  .chart-value { font-variant-numeric: tabular-nums; font-size: 13px; white-space: nowrap; }
+  .chart-desc { color: var(--muted); font-size: 12px; margin: 1px 0 2px; }
+  .chart svg { display: block; width: 100%; height: 112px; cursor: crosshair; }
+  .chart .line { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; }
+  .chart .axis text { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .chart .axis line { stroke: var(--axis); }
+  .chart .baseline { stroke: var(--axis); }
+  .chart .grid line { stroke: var(--hairline); }
+  .chart .cursor { stroke: var(--ink); stroke-width: 1; }
+  .chart .cursor-dot { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
+  .chart .hover-line { stroke: var(--muted); stroke-dasharray: 3 3; }
+  .nb-note { color: var(--ink-2); font-size: 13px; margin: 0; }
+  .scores-foot { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .scores-status { color: var(--muted); font-size: 12px; }
+
+  footer { margin-top: 16px; color: var(--ink-2); font-size: 12px; }
+  footer p { margin: 4px 0; max-width: 120ch; }
+  .status { padding: 24px; color: var(--ink); }
+
+  @media (max-width: 1100px) {
+    .stage { grid-template-columns: 1fr; }
+    .charts { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  }
+  @media (max-width: 720px) {
+    .legend { margin-left: 0; width: 100%; }
+    .slider input { width: 150px; }
+    .hint { display: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Hexmap morph: linear baseline</h1>
+  <p class="sub">The 436 districts of the 119th Congress (Census, 1:20M) morphing into the hex layout from the Congressional District Health Dashboard. Every point on a district's outline travels in a straight line to a matching point on its hex, and nothing stops districts from overlapping on the way.</p>
+
+  <div class="controls">
+    <div class="seg" role="group" aria-label="View">
+      <button id="btn-map" type="button" aria-pressed="true">Map</button>
+      <button id="btn-hex" type="button" aria-pressed="false">Hexes</button>
+    </div>
+    <button id="play" type="button">Play</button>
+    <label class="slider">t
+      <input id="t" type="range" min="0" max="1" step="0.001" value="0" aria-label="Morph position, 0 is the map and 1 is the hex layout">
+      <output id="t-val" for="t">0.00</output>
+    </label>
+    <label class="check"><input id="overlay" type="checkbox"> Hex outlines</label>
+    <label class="check"><input id="show-overlaps" type="checkbox"> <i class="swatch" style="background: var(--overlap)"></i> Overlaps</label>
+    <div class="legend" id="legend-distance">
+      <span class="legend-title">Distance each district moves, in hex steps</span>
+      <span class="legend-bar" id="legend-bar"></span>
+      <span class="legend-ticks"><span>0</span><span id="legend-mid"></span><span id="legend-max"></span></span>
+    </div>
+    <div class="legend" id="legend-nb" hidden>
+      <span class="legend-title" id="nb-title"></span>
+      <span class="chips">
+        <span class="chip"><i class="swatch" style="background: var(--kept)"></i>Kept <b id="nb-kept"></b></span>
+        <span class="chip"><i class="swatch" style="background: var(--lost)"></i>Map only <b id="nb-lost"></b></span>
+        <span class="chip"><i class="swatch" style="background: var(--new)"></i>Hex only <b id="nb-new"></b></span>
+      </span>
+    </div>
+  </div>
+
+  <div class="stage">
+    <figure class="map" id="figure">
+      <svg id="map" role="img" aria-label="Map of the 436 congressional districts morphing into a hex grid"></svg>
+      <canvas id="overlap-canvas" hidden></canvas>
+      <div class="map-tools">
+        <span class="hint">Click a district for its neighbours · scroll to zoom</span>
+        <button id="reset" type="button">Reset view</button>
+      </div>
+      <div class="tip" id="tip" hidden></div>
+      <p class="status" id="status" hidden></p>
+    </figure>
+
+    <aside class="scores" aria-labelledby="scores-h">
+      <h2 id="scores-h">Scores per frame</h2>
+      <p class="scores-sub">Computed at 51 frames from t = 0 to 1. Hover a chart to read it, click to jump there.</p>
+      <div class="charts" id="charts"></div>
+      <p class="nb-note" id="nb-note"></p>
+      <div class="scores-foot">
+        <button id="csv" type="button" disabled>Download scores (CSV)</button>
+        <span class="scores-status" id="scores-status">Scoring frames…</span>
+      </div>
+    </aside>
+  </div>
+
+  <footer>
+    <p id="fit-note"></p>
+    <p>Data: U.S. Census Bureau, cartographic boundary file cb_2024_us_cd119_20m. Hex layout: Department of Population Health, NYU Langone Health, Congressional District Health Dashboard, www.congressionaldistricthealthdashboard.org, accessed Sept 26, 2026.</p>
+  </footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="hexmap_data.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  const DATA = window.HEXMAP_DATA;
+  const statusEl = document.getElementById("status");
+  if (!window.d3 || !DATA) {
+    statusEl.textContent = !window.d3
+      ? "d3 didn't load. The page gets it from cdnjs, so it needs an internet connection."
+      : "hexmap_data.js didn't load. Keep it in the same folder as index.html.";
+    statusEl.hidden = false;
+    document.getElementById("map").style.display = "none";
+    return;
+  }
+
+  const features = DATA.features;
+
+  // ---------------------------------------------------------------------------
+  // 1. Project the districts with Albers USA (d3's default scale and translate).
+  // ---------------------------------------------------------------------------
+  const projection = d3.geoAlbersUsa();
+  const geoPath = d3.geoPath(projection);
+
+  // Capture each district's projected rings exactly as geoPath would draw them
+  // (after Albers USA has moved Alaska and Hawaii into their insets and clipped).
+  let recording = null;
+  const recorder = d3.geoPath(projection, {
+    moveTo(x, y) { recording.push([[x, y]]); },
+    lineTo(x, y) {
+      const ring = recording[recording.length - 1], last = ring[ring.length - 1];
+      if (last[0] !== x || last[1] !== y) ring.push([x, y]);
+    },
+    closePath() {},
+    arc() {},
+  });
+  function projectedRings(feature) {
+    recording = [];
+    recorder(feature);
+    const rings = recording;
+    recording = null;
+    for (const r of rings) {
+      const a = r[0], b = r[r.length - 1];
+      if (r.length > 1 && a[0] === b[0] && a[1] === b[1]) r.pop();
+    }
+    return rings.filter((r) => r.length >= 3);
+  }
+
+  // ---------------------------------------------------------------------------
+  // 2. Fit the hex layout onto the projected map.
+  //    screen = s * (cx, -cy) + (tx, ty): flip y, one uniform scale, one shift.
+  //    s, tx, ty minimise the squared distance from hex centres to district
+  //    centroids (closed-form least squares).
+  // ---------------------------------------------------------------------------
+  const centroids = features.map((f) => geoPath.centroid(f));
+  const n = features.length;
+  let pmx = 0, pmy = 0, cmx = 0, cmy = 0;
+  features.forEach((f, i) => {
+    pmx += f.properties.cx; pmy -= f.properties.cy;
+    cmx += centroids[i][0]; cmy += centroids[i][1];
+  });
+  pmx /= n; pmy /= n; cmx /= n; cmy /= n;
+  let num = 0, den = 0;
+  features.forEach((f, i) => {
+    const dx = f.properties.cx - pmx, dy = -f.properties.cy - pmy;
+    num += dx * (centroids[i][0] - cmx) + dy * (centroids[i][1] - cmy);
+    den += dx * dx + dy * dy;
+  });
+  const s = num / den;
+  const tx = cmx - s * pmx;
+  const ty = cmy - s * pmy;
+
+  const R = s * DATA.hexRadius;                     // drawn hex radius on screen
+  const STEP = s * DATA.gridRadius * Math.sqrt(3);  // distance between neighbouring hex centres
+  const hexCenter = (p) => [s * p.cx + tx, -s * p.cy + ty];
+
+  // Pointy-top hex, corners in the same order as cdhd_hex_119.geojson.
+  function hexCorners([X, Y]) {
+    const out = [];
+    for (let k = 0; k < 6; k++) {
+      const a = (Math.PI / 180) * (-30 + 60 * k);
+      out.push([X + R * Math.cos(a), Y - R * Math.sin(a)]);
+    }
+    return out;
+  }
+
+  // ---------------------------------------------------------------------------
+  // 3. Linear morph. Pair every outline point with a point on the hex, then
+  //    move each pair along a straight line: p(t) = (1 - t) * src + t * dst.
+  // ---------------------------------------------------------------------------
+  function signedArea(ring) {
+    let a = 0;
+    for (let i = 0, m = ring.length; i < m; i++) {
+      const p = ring[i], q = ring[(i + 1) % m];
+      a += p[0] * q[1] - q[0] * p[1];
+    }
+    return a / 2;
+  }
+
+  // Main outline -> hex. Points are paired by arc length: the point a fraction f
+  // of the way round the outline goes to the point a fraction f + phase of the
+  // way round the hex. The phase is the one where the two shapes, each centred on
+  // itself, line up best. Hex corners are added to the outline as extra points,
+  // so t = 0 draws the district exactly and t = 1 draws the hex exactly.
+  const SAMPLES = 60, PHASES = 240; // PHASES must be a multiple of SAMPLES
+  function matchRingToHex(ring, corners, [X, Y]) {
+    if (Math.sign(signedArea(ring)) !== Math.sign(signedArea(corners))) ring = ring.slice().reverse();
+    const m = ring.length;
+    const u = new Float64Array(m + 1);
+    for (let j = 0; j < m; j++) {
+      const a = ring[j], b = ring[(j + 1) % m];
+      u[j + 1] = u[j] + Math.hypot(b[0] - a[0], b[1] - a[1]);
+    }
+    const total = u[m];
+    for (let j = 0; j <= m; j++) u[j] /= total;
+
+    const ringAt = (f) => {
+      let lo = 0, hi = m;
+      while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (u[mid] <= f) lo = mid; else hi = mid; }
+      const a = ring[lo], b = ring[(lo + 1) % m];
+      const r = (f - u[lo]) / (u[lo + 1] - u[lo]);
+      return [a[0] + (b[0] - a[0]) * r, a[1] + (b[1] - a[1]) * r];
+    };
+    const hexAt = (f) => {
+      f -= Math.floor(f);
+      const x = f * 6, k = Math.floor(x) % 6, r = x - Math.floor(x);
+      const a = corners[k], b = corners[(k + 1) % 6];
+      return [a[0] + (b[0] - a[0]) * r, a[1] + (b[1] - a[1]) * r];
+    };
+
+    // Best phase: maximise the sum of dot products between centred samples.
+    const dx = new Float64Array(SAMPLES), dy = new Float64Array(SAMPLES);
+    let mx = 0, my = 0;
+    for (let i = 0; i < SAMPLES; i++) {
+      const p = ringAt(i / SAMPLES);
+      dx[i] = p[0]; dy[i] = p[1]; mx += p[0]; my += p[1];
+    }
+    mx /= SAMPLES; my /= SAMPLES;
+    for (let i = 0; i < SAMPLES; i++) { dx[i] -= mx; dy[i] -= my; }
+    const hx = new Float64Array(PHASES), hy = new Float64Array(PHASES);
+    for (let q = 0; q < PHASES; q++) { const h = hexAt(q / PHASES); hx[q] = h[0] - X; hy[q] = h[1] - Y; }
+    const stride = PHASES / SAMPLES;
+    let phase = 0, bestScore = -Infinity;
+    for (let q = 0; q < PHASES; q++) {
+      let score = 0;
+      for (let i = 0; i < SAMPLES; i++) {
+        const k = (i * stride + q) % PHASES;
+        score += dx[i] * hx[k] + dy[i] * hy[k];
+      }
+      if (score > bestScore) { bestScore = score; phase = q / PHASES; }
+    }
+
+    const params = Array.from(u.subarray(0, m));
+    for (let k = 0; k < 6; k++) { const f = k / 6 - phase; params.push(f - Math.floor(f)); }
+    params.sort((a, b) => a - b);
+    const src = [], dst = [];
+    let prev = -1;
+    for (const f of params) {
+      if (f - prev < 1e-12) continue;
+      prev = f;
+      const a = ringAt(f), b = hexAt(f + phase);
+      src.push(a[0], a[1]);
+      dst.push(b[0], b[1]);
+    }
+    return { src: Float64Array.from(src), dst: Float64Array.from(dst) };
+  }
+
+  const districts = features.map((f, i) => {
+    const p = f.properties;
+    const center = hexCenter(p);
+    const corners = hexCorners(center);
+    const rings = projectedRings(f);
+    // The largest ring becomes the hex. Any other pieces (islands) shrink
+    // into the hex centre and vanish at t = 1.
+    let main = 0;
+    rings.forEach((r, j) => { if (Math.abs(signedArea(r)) > Math.abs(signedArea(rings[main]))) main = j; });
+    const parts = [matchRingToHex(rings[main], corners, center)];
+    rings.forEach((r, j) => {
+      if (j === main) return;
+      const src = Float64Array.from(r.flat());
+      const dst = new Float64Array(src.length);
+      for (let k = 0; k < dst.length; k += 2) { dst[k] = center[0]; dst[k + 1] = center[1]; }
+      parts.push({ src, dst });
+    });
+    // Neighbours: kept (on both maps), lost (map only), fresh (hex only).
+    const mapN = new Set(p.map_neighbors || []), hexN = new Set(p.hex_neighbors);
+    return {
+      id: p.geo_fips,
+      properties: p,
+      centroid: centroids[i],
+      center,
+      corners,
+      parts,
+      dist: Math.hypot(center[0] - centroids[i][0], center[1] - centroids[i][1]) / STEP,
+      kept: new Set([...mapN].filter((x) => hexN.has(x))),
+      lost: new Set([...mapN].filter((x) => !hexN.has(x))),
+      fresh: new Set([...hexN].filter((x) => !mapN.has(x))),
+    };
+  });
+
+  const round2 = (v) => Math.round(v * 100) / 100;
+  function pathAt(parts, t) {
+    let d = "";
+    for (const { src, dst } of parts) {
+      for (let i = 0; i < src.length; i += 2) {
+        const x = src[i] + (dst[i] - src[i]) * t;
+        const y = src[i + 1] + (dst[i + 1] - src[i + 1]) * t;
+        d += (i ? "L" : "M") + round2(x) + "," + round2(y);
+      }
+      d += "Z";
+    }
+    return d;
+  }
+  function traceCanvas(ctx, parts, t) {
+    for (const { src, dst } of parts) {
+      for (let i = 0; i < src.length; i += 2) {
+        const x = src[i] + (dst[i] - src[i]) * t;
+        const y = src[i + 1] + (dst[i + 1] - src[i + 1]) * t;
+        if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+      }
+      ctx.closePath();
+    }
+  }
+
+  // Overlap raster. Every district adds 100 to the red channel of the pixels it
+  // covers ("lighter" blending), so a pixel under two districts reads 200. A
+  // shared border's anti-aliased edge pixels add up to about 100, not 200, so
+  // borders don't count as overlap. Covered = alpha at least half.
+  function rasterize(ctx, w, h, m, t) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalCompositeOperation = "source-over";
+    ctx.clearRect(0, 0, w, h);
+    ctx.globalCompositeOperation = "lighter";
+    ctx.fillStyle = "rgb(100, 0, 0)";
+    ctx.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
+    for (const d of districts) { ctx.beginPath(); traceCanvas(ctx, d.parts, t); ctx.fill(); }
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalCompositeOperation = "source-over";
+    return ctx.getImageData(0, 0, w, h).data;
+  }
+
+  // ---------------------------------------------------------------------------
+  // 4. Draw the map.
+  // ---------------------------------------------------------------------------
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  const grow = (x, y) => { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; };
+  for (const d of districts) {
+    for (const { src } of d.parts) for (let i = 0; i < src.length; i += 2) grow(src[i], src[i + 1]);
+    for (const [x, y] of d.corners) grow(x, y);
+  }
+  const pad = 12;
+  const view = [x0 - pad, y0 - pad, x1 - x0 + 2 * pad, y1 - y0 + 2 * pad];
+
+  const svg = d3.select("#map").attr("viewBox", view);
+  const layer = svg.append("g");
+  const districtPaths = layer.append("g").attr("class", "districts")
+    .selectAll("path").data(districts).join("path");
+  const hexLayer = layer.append("g").attr("class", "hex-outlines").attr("display", "none");
+  hexLayer.selectAll("path").data(districts).join("path")
+    .attr("d", (d) => "M" + d.corners.map(([x, y]) => round2(x) + "," + round2(y)).join("L") + "Z");
+
+  // ---------------------------------------------------------------------------
+  // 5. Colour. Default: how far each district's centroid is from its hex
+  //    centre, on a single-hue ramp (reversed on the dark surface). With a
+  //    district selected: its neighbours, kept / map only / hex only.
+  // ---------------------------------------------------------------------------
+  const RAMP = ["#b7d3f6", "#86b6ef", "#5598e7", "#2a78d6", "#1c5cab", "#104281"];
+  // Scale tops out at an even number just above the 99th percentile, so one
+  // extreme case (Alaska) doesn't wash out everything else. Past the top, the
+  // darkest step.
+  const sortedDist = districts.map((d) => d.dist).sort((a, b) => a - b);
+  const maxDist = 2 * Math.ceil(d3.quantileSorted(sortedDist, 0.99) / 2);
+  const clipped = sortedDist[sortedDist.length - 1] > maxDist;
+  document.getElementById("legend-mid").textContent = maxDist / 2;
+  document.getElementById("legend-max").textContent = maxDist + (clipped ? "+" : "");
+  const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  function isDark() {
+    const theme = document.documentElement.dataset.theme;
+    return theme === "dark" || (theme !== "light" && darkQuery.matches);
+  }
+  const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+  let selected = null;
+  function applyColors() {
+    const ramp = isDark() ? RAMP.slice().reverse() : RAMP;
+    const interp = d3.interpolateRgbBasis(ramp);
+    const kept = cssVar("--kept"), lost = cssVar("--lost"), fresh = cssVar("--new");
+    const other = cssVar("--other"), ink = cssVar("--ink");
+    districtPaths.attr("fill", (d) => {
+      if (!selected) return interp(Math.min(1, d.dist / maxDist));
+      if (d === selected) return ink;
+      if (selected.kept.has(d.id)) return kept;
+      if (selected.lost.has(d.id)) return lost;
+      if (selected.fresh.has(d.id)) return fresh;
+      return other;
+    });
+    document.getElementById("legend-bar").style.background = `linear-gradient(to right, ${ramp.join(", ")})`;
+  }
+  darkQuery.addEventListener("change", () => { applyColors(); drawOverlaps(); });
+
+  function select(d) {
+    selected = d;
+    districtPaths.classed("selected", (x) => x === d);
+    if (d) districtPaths.filter((x) => x === d).raise();
+    document.getElementById("legend-distance").hidden = !!d;
+    document.getElementById("legend-nb").hidden = !d;
+    if (d) {
+      document.getElementById("nb-title").textContent = `Neighbours of ${d.properties.geo_name}. Esc to clear.`;
+      document.getElementById("nb-kept").textContent = d.kept.size;
+      document.getElementById("nb-lost").textContent = d.lost.size;
+      document.getElementById("nb-new").textContent = d.fresh.size;
+    }
+    applyColors();
+  }
+
+  // ---------------------------------------------------------------------------
+  // 6. Overlap layer: pixels under two or more districts, drawn over the map.
+  // ---------------------------------------------------------------------------
+  const overlapCanvas = document.getElementById("overlap-canvas");
+  const octx = overlapCanvas.getContext("2d");
+  const workCanvas = document.createElement("canvas");
+  const wctx = workCanvas.getContext("2d", { willReadFrequently: true });
+  let showOverlaps = false;
+  let zoomTransform = d3.zoomIdentity;
+  let t = 0;
+
+  function drawOverlaps() {
+    if (!showOverlaps) { overlapCanvas.hidden = true; return; }
+    const W = Math.round(svg.node().clientWidth), H = Math.round(svg.node().clientHeight);
+    if (!W || !H) return;
+    if (overlapCanvas.width !== W || overlapCanvas.height !== H) {
+      overlapCanvas.width = workCanvas.width = W;
+      overlapCanvas.height = workCanvas.height = H;
+      overlapCanvas.style.width = W + "px";
+      overlapCanvas.style.height = H + "px";
+    }
+    const k0 = W / view[2], k = zoomTransform.k * k0;
+    const px = rasterize(wctx, W, H, [k, 0, 0, k, (zoomTransform.x - view[0]) * k0, (zoomTransform.y - view[1]) * k0], t);
+    const out = octx.createImageData(W, H);
+    const o = out.data;
+    const c = d3.rgb(cssVar("--overlap"));
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i + 3] >= 128 && px[i] > 150) { o[i] = c.r; o[i + 1] = c.g; o[i + 2] = c.b; o[i + 3] = 230; }
+    }
+    octx.putImageData(out, 0, 0);
+    overlapCanvas.hidden = false;
+  }
+
+  // ---------------------------------------------------------------------------
+  // 7. Controls.
+  // ---------------------------------------------------------------------------
+  const slider = document.getElementById("t");
+  const tVal = document.getElementById("t-val");
+  const btnMap = document.getElementById("btn-map");
+  const btnHex = document.getElementById("btn-hex");
+  const playBtn = document.getElementById("play");
+
+  function render(next) {
+    t = Math.max(0, Math.min(1, next));
+    districtPaths.attr("d", (d) => pathAt(d.parts, t));
+    slider.value = t;
+    tVal.textContent = t.toFixed(2);
+    btnMap.setAttribute("aria-pressed", String(t === 0));
+    btnHex.setAttribute("aria-pressed", String(t === 1));
+    drawOverlaps();
+    updateCursors();
+  }
+
+  let timer = null;
+  function stop() {
+    if (timer) { timer.stop(); timer = null; }
+    playBtn.textContent = "Play";
+  }
+  function play() {
+    if (timer) { stop(); return; }
+    const from = t, to = t < 0.5 ? 1 : 0;
+    const duration = 2500 * Math.abs(to - from);
+    playBtn.textContent = "Stop";
+    timer = d3.timer((elapsed) => {
+      const k = Math.min(1, elapsed / duration);
+      render(from + (to - from) * d3.easeCubicInOut(k));
+      if (k === 1) stop();
+    });
+  }
+
+  btnMap.addEventListener("click", () => { stop(); render(0); });
+  btnHex.addEventListener("click", () => { stop(); render(1); });
+  playBtn.addEventListener("click", play);
+  slider.addEventListener("input", () => { stop(); render(+slider.value); });
+  document.getElementById("overlay").addEventListener("change", (e) => {
+    hexLayer.attr("display", e.target.checked ? null : "none");
+  });
+  document.getElementById("show-overlaps").addEventListener("change", (e) => {
+    showOverlaps = e.target.checked;
+    drawOverlaps();
+  });
+
+  // Zoom and pan. The overlap layer is redrawn to match, once per frame at most.
+  let overlapQueued = false;
+  const queueOverlaps = () => {
+    if (overlapQueued || !showOverlaps) return;
+    overlapQueued = true;
+    requestAnimationFrame(() => { overlapQueued = false; drawOverlaps(); });
+  };
+  const zoom = d3.zoom()
+    .scaleExtent([1, 16])
+    .translateExtent([[view[0], view[1]], [view[0] + view[2], view[1] + view[3]]])
+    .on("zoom", (e) => {
+      zoomTransform = e.transform;
+      layer.attr("transform", e.transform);
+      queueOverlaps();
+    });
+  svg.call(zoom);
+  document.getElementById("reset").addEventListener("click", () => {
+    svg.transition().duration(400).call(zoom.transform, d3.zoomIdentity);
+  });
+  new ResizeObserver(queueOverlaps).observe(svg.node());
+
+  // Hover details and click to select.
+  const figure = document.getElementById("figure");
+  const tip = document.getElementById("tip");
+  function placeTip(e) {
+    const box = figure.getBoundingClientRect();
+    let left = e.clientX - box.left + 14, top = e.clientY - box.top + 14;
+    if (left + tip.offsetWidth > box.width - 8) left = e.clientX - box.left - tip.offsetWidth - 14;
+    if (top + tip.offsetHeight > box.height - 8) top = e.clientY - box.top - tip.offsetHeight - 14;
+    tip.style.left = left + "px";
+    tip.style.top = top + "px";
+  }
+  function tipHTML(d) {
+    const p = d.properties;
+    let rel = "";
+    if (selected && d !== selected) {
+      const name = selected.properties.geo_name;
+      if (selected.kept.has(d.id)) rel = `Neighbour of ${name} on both maps`;
+      else if (selected.lost.has(d.id)) rel = `Neighbour of ${name} on the map only`;
+      else if (selected.fresh.has(d.id)) rel = `Neighbour of ${name} on the hex map only`;
+    }
+    return `<strong>${p.geo_name}</strong>` +
+      `<span>${p.state_abbr} · geo_fips ${p.geo_fips} · grid cell (${p.col2}, ${p.row})</span><br>` +
+      `<span>Moves ${d.dist.toFixed(1)} hex steps</span><br>` +
+      `<span>Neighbours: ${d.kept.size} kept, ${d.lost.size} map only, ${d.fresh.size} hex only</span>` +
+      (rel ? `<br><span class="rel">${rel}</span>` : "");
+  }
+  districtPaths
+    .on("pointerenter", function (e, d) {
+      d3.select(this).raise().classed("hover", true);
+      tip.innerHTML = tipHTML(d);
+      tip.hidden = false;
+      placeTip(e);
+    })
+    .on("pointermove", placeTip)
+    .on("pointerleave", function () {
+      d3.select(this).classed("hover", false);
+      if (selected) districtPaths.filter((x) => x === selected).raise();
+      tip.hidden = true;
+    })
+    .on("click", function (e, d) {
+      e.stopPropagation();
+      select(selected === d ? null : d);
+      tip.innerHTML = tipHTML(d);
+    });
+  svg.on("click", () => { if (selected) select(null); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && selected) select(null); });
+
+  // ---------------------------------------------------------------------------
+  // 8. Scores per frame.
+  //    Overlap: share of the covered area that sits under two or more districts.
+  //    Self-crossing: districts whose main outline crosses itself.
+  //    Area change: mean over districts of |dA/dt| divided by the district's
+  //    average size, (A(0) + A(1)) / 2.
+  // ---------------------------------------------------------------------------
+  const FRAMES = 51;
+  const METRICS = [
+    { key: "overlap", title: "Overlap", desc: "Covered area under two or more districts",
+      fmt: (v) => v.toFixed(1) + "%", tick: (v) => v + "%" },
+    { key: "crossing", title: "Self-crossing outlines", desc: "Districts whose outline crosses itself",
+      fmt: (v) => Math.round(v) + (Math.round(v) === 1 ? " district" : " districts"), tick: d3.format("d") },
+    { key: "area", title: "Area change", desc: "Mean |dA/dt| relative to each district's size",
+      fmt: (v) => v.toFixed(2), tick: d3.format(".1f") },
+  ];
+  let scores = null;
+
+  let bufX = new Float64Array(4096), bufY = new Float64Array(4096);
+  function interpolate(part, tt) {
+    const m = part.src.length / 2;
+    if (bufX.length < m) { bufX = new Float64Array(m * 2); bufY = new Float64Array(m * 2); }
+    const { src, dst } = part;
+    for (let i = 0, k = 0; i < m; i++, k += 2) {
+      bufX[i] = src[k] + (dst[k] - src[k]) * tt;
+      bufY[i] = src[k + 1] + (dst[k + 1] - src[k + 1]) * tt;
+    }
+    return m;
+  }
+  function shoelace(m) {
+    let a = 0;
+    for (let i = 0, j = m - 1; i < m; j = i++) a += bufX[j] * bufY[i] - bufX[i] * bufY[j];
+    return a / 2;
+  }
+  // Does the outline in bufX/bufY cross itself? Segments go into a grid so only
+  // nearby pairs are tested. Touching and collinear pairs don't count.
+  const EPS = 1e-7;
+  function orient(ax, ay, bx, by, cx, cy) {
+    const v = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+    return Math.abs(v) < EPS ? 0 : v;
+  }
+  function segmentsCross(a, b, m) {
+    if (b - a === 1 || (a === 0 && b === m - 1)) return false;
+    const a2 = a + 1 === m ? 0 : a + 1, b2 = b + 1 === m ? 0 : b + 1;
+    const o1 = orient(bufX[a], bufY[a], bufX[a2], bufY[a2], bufX[b], bufY[b]);
+    const o2 = orient(bufX[a], bufY[a], bufX[a2], bufY[a2], bufX[b2], bufY[b2]);
+    if (o1 * o2 >= 0) return false;
+    const o3 = orient(bufX[b], bufY[b], bufX[b2], bufY[b2], bufX[a], bufY[a]);
+    const o4 = orient(bufX[b], bufY[b], bufX[b2], bufY[b2], bufX[a2], bufY[a2]);
+    return o3 * o4 < 0;
+  }
+  function crossesItself(m) {
+    if (m < 4) return false;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (let i = 0; i < m; i++) {
+      if (bufX[i] < minX) minX = bufX[i]; if (bufX[i] > maxX) maxX = bufX[i];
+      if (bufY[i] < minY) minY = bufY[i]; if (bufY[i] > maxY) maxY = bufY[i];
+    }
+    const g = Math.max(1, Math.ceil(Math.sqrt(m)));
+    const cw = (maxX - minX) / g || 1, ch = (maxY - minY) / g || 1;
+    const cell = (v, min, size) => Math.min(g - 1, Math.max(0, Math.floor((v - min) / size)));
+    const cells = new Map();
+    for (let i = 0; i < m; i++) {
+      const j = i + 1 === m ? 0 : i + 1;
+      const cx0 = cell(Math.min(bufX[i], bufX[j]), minX, cw), cx1 = cell(Math.max(bufX[i], bufX[j]), minX, cw);
+      const cy0 = cell(Math.min(bufY[i], bufY[j]), minY, ch), cy1 = cell(Math.max(bufY[i], bufY[j]), minY, ch);
+      for (let cy = cy0; cy <= cy1; cy++) for (let cx = cx0; cx <= cx1; cx++) {
+        const key = cy * g + cx;
+        let list = cells.get(key);
+        if (!list) cells.set(key, (list = []));
+        for (const other of list) if (segmentsCross(other, i, m)) return true;
+        list.push(i);
+      }
+    }
+    return false;
+  }
+
+  // Fixed-size raster for the overlap score, independent of the window.
+  const SW = 1200, SH = Math.round((SW * view[3]) / view[2]);
+  const scoreCanvas = document.createElement("canvas");
+  scoreCanvas.width = SW; scoreCanvas.height = SH;
+  const sctx = scoreCanvas.getContext("2d", { willReadFrequently: true });
+  const sk = SW / view[2];
+  const scoreMatrix = [sk, 0, 0, sk, -view[0] * sk, -view[1] * sk];
+  function overlapShare(tt) {
+    const px = rasterize(sctx, SW, SH, scoreMatrix, tt);
+    let covered = 0, over = 0;
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i + 3] >= 128) { covered++; if (px[i] > 150) over++; }
+    }
+    return covered ? (100 * over) / covered : 0;
+  }
+
+  const scoresStatus = document.getElementById("scores-status");
+  function computeScores(done) {
+    const areas = districts.map(() => new Float64Array(FRAMES));
+    const rows = [];
+    let j = 0;
+    (function step() {
+      const end = Math.min(FRAMES, j + 4);
+      for (; j < end; j++) {
+        const tt = j / (FRAMES - 1);
+        let crossing = 0;
+        districts.forEach((d, i) => {
+          let a = 0;
+          d.parts.forEach((part, p) => {
+            const m = interpolate(part, tt);
+            a += Math.abs(shoelace(m));
+            if (p === 0 && crossesItself(m)) crossing++;
+          });
+          areas[i][j] = a;
+        });
+        rows.push({ t: tt, overlap: overlapShare(tt), crossing, area: 0 });
+      }
+      scoresStatus.textContent = `Scoring frames… ${j} of ${FRAMES}`;
+      if (j < FRAMES) { setTimeout(step, 0); return; }
+      const h = 1 / (FRAMES - 1);
+      for (let k = 0; k < FRAMES; k++) {
+        const k0 = Math.max(0, k - 1), k1 = Math.min(FRAMES - 1, k + 1);
+        let sum = 0;
+        districts.forEach((d, i) => {
+          const size = (areas[i][0] + areas[i][FRAMES - 1]) / 2;
+          sum += Math.abs(areas[i][k1] - areas[i][k0]) / ((k1 - k0) * h) / size;
+        });
+        rows[k].area = sum / districts.length;
+      }
+      done(rows);
+    })();
+  }
+
+  // Charts: one per score, sharing the t axis, with a cursor at the current t.
+  const chartsEl = document.getElementById("charts");
+  const charts = METRICS.map((m) => {
+    const el = document.createElement("div");
+    el.className = "chart";
+    el.innerHTML =
+      `<div class="chart-head"><span class="chart-title">${m.title}</span><span class="chart-value"></span></div>` +
+      `<div class="chart-desc">${m.desc}</div><svg role="img" aria-label="${m.title} at each frame of the morph"></svg>`;
+    chartsEl.appendChild(el);
+    return { m, el, svg: el.querySelector("svg"), value: el.querySelector(".chart-value") };
+  });
+  const valueAt = (key, tt) => {
+    const f = tt * (FRAMES - 1), i = Math.min(FRAMES - 2, Math.floor(f)), r = f - i;
+    return scores[i][key] * (1 - r) + scores[i + 1][key] * r;
+  };
+  let hoverT = null;
+  function updateCursors() {
+    if (!scores) return;
+    for (const c of charts) {
+      if (!c.x) continue;
+      const tt = hoverT === null ? t : hoverT;
+      const v = valueAt(c.m.key, tt);
+      c.cursor.attr("x1", c.x(t)).attr("x2", c.x(t));
+      c.dot.attr("cx", c.x(t)).attr("cy", c.y(valueAt(c.m.key, t)));
+      c.hover.attr("display", hoverT === null ? "none" : null).attr("x1", c.x(tt)).attr("x2", c.x(tt));
+      c.value.textContent = (hoverT === null ? "" : `t ${tt.toFixed(2)}: `) + c.m.fmt(v);
+    }
+  }
+  function drawCharts() {
+    if (!scores) return;
+    for (const c of charts) {
+      const width = Math.max(200, Math.round(c.svg.clientWidth)), height = 112;
+      const margin = { top: 8, right: 10, bottom: 20, left: 38 };
+      const x = d3.scaleLinear([0, 1], [margin.left, width - margin.right]);
+      const y = d3.scaleLinear([0, d3.max(scores, (r) => r[c.m.key]) || 1], [height - margin.bottom, margin.top]).nice(3);
+      const g = d3.select(c.svg).attr("viewBox", [0, 0, width, height]);
+      g.selectAll("*").remove();
+      g.append("g").attr("class", "grid").selectAll("line").data(y.ticks(3).filter((v) => v > 0)).join("line")
+        .attr("x1", margin.left).attr("x2", width - margin.right).attr("y1", y).attr("y2", y);
+      g.append("line").attr("class", "baseline")
+        .attr("x1", margin.left).attr("x2", width - margin.right).attr("y1", y(0)).attr("y2", y(0));
+      g.append("g").attr("class", "axis").attr("transform", `translate(0,${height - margin.bottom})`)
+        .call(d3.axisBottom(x).tickValues([0, 0.25, 0.5, 0.75, 1]).tickSize(3).tickFormat(d3.format("~g")))
+        .call((a) => a.select(".domain").remove());
+      g.append("g").attr("class", "axis").attr("transform", `translate(${margin.left},0)`)
+        .call(d3.axisLeft(y).ticks(3).tickSize(0).tickPadding(6).tickFormat(c.m.tick))
+        .call((a) => a.select(".domain").remove());
+      g.append("path").attr("class", "line")
+        .attr("d", d3.line().x((r) => x(r.t)).y((r) => y(r[c.m.key]))(scores));
+      c.hover = g.append("line").attr("class", "hover-line").attr("y1", margin.top).attr("y2", height - margin.bottom);
+      c.cursor = g.append("line").attr("class", "cursor").attr("y1", margin.top).attr("y2", height - margin.bottom);
+      c.dot = g.append("circle").attr("class", "cursor-dot").attr("r", 4);
+      c.x = x; c.y = y;
+      const tAt = (e) => Math.max(0, Math.min(1, x.invert(d3.pointer(e, c.svg)[0])));
+      g.append("rect").attr("x", margin.left - 6).attr("y", 0)
+        .attr("width", width - margin.left - margin.right + 12).attr("height", height)
+        .attr("fill", "transparent")
+        .on("pointermove", (e) => { hoverT = tAt(e); updateCursors(); })
+        .on("pointerleave", () => { hoverT = null; updateCursors(); })
+        .on("click", (e) => { stop(); hoverT = null; render(tAt(e)); });
+    }
+    updateCursors();
+  }
+  let chartsQueued = false;
+  new ResizeObserver(() => {
+    if (chartsQueued) return;
+    chartsQueued = true;
+    requestAnimationFrame(() => { chartsQueued = false; drawCharts(); });
+  }).observe(chartsEl);
+
+  const csvBtn = document.getElementById("csv");
+  csvBtn.addEventListener("click", () => {
+    const lines = ["t,overlap_pct,self_crossing_districts,area_change_rate"].concat(
+      scores.map((r) => [r.t.toFixed(2), r.overlap.toFixed(3), r.crossing, r.area.toFixed(4)].join(",")));
+    const url = URL.createObjectURL(new Blob([lines.join("\n") + "\n"], { type: "text/csv" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "hexmap_scores_linear_baseline.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+
+  // ---------------------------------------------------------------------------
+  // 9. Notes.
+  // ---------------------------------------------------------------------------
+  const rms = Math.sqrt(d3.mean(districts, (d) => d.dist * d.dist));
+  document.getElementById("fit-note").textContent =
+    `Alignment: the hex layout is flipped vertically, scaled by ${s.toFixed(3)} and shifted by ` +
+    `(${tx.toFixed(1)}, ${ty.toFixed(1)}) onto d3.geoAlbersUsa, by least squares from hex centres to ` +
+    `district centroids. After the fit, a district's centroid sits ${rms.toFixed(2)} hex steps from its hex centre (RMS).`;
+
+  let mapPairs = 0, hexPairs = 0, keptPairs = 0;
+  for (const d of districts) {
+    mapPairs += d.kept.size + d.lost.size;
+    hexPairs += d.kept.size + d.fresh.size;
+    keptPairs += d.kept.size;
+  }
+  mapPairs /= 2; hexPairs /= 2; keptPairs /= 2;
+  const fmtInt = d3.format(",");
+  document.getElementById("nb-note").textContent = features[0].properties.map_neighbors
+    ? `Only ${fmtInt(keptPairs)} of the ${fmtInt(mapPairs)} neighbouring pairs on the map are still neighbours in the hex layout ` +
+      `(${Math.round((100 * keptPairs) / mapPairs)}%). The morph has to pull ${fmtInt(mapPairs - keptPairs)} pairs apart ` +
+      `and bring ${fmtInt(hexPairs - keptPairs)} new pairs together. Click a district to see its own.`
+    : "Rebuild hexmap_data.js with build_data.mjs to see map neighbours.";
+
+  applyColors();
+  render(0);
+  computeScores((rows) => {
+    scores = rows;
+    scoresStatus.textContent = "";
+    csvBtn.disabled = false;
+    drawCharts();
+  });
+
+  // Handles for poking at things from the browser console.
+  window.hexmap = {
+    projection, districts, render, select,
+    fit: { s, tx, ty, rmsSteps: rms, hexStep: STEP, hexRadius: R },
+    get scores() { return scores; },
+  };
+})();
+</script>
+</body>
+</html>

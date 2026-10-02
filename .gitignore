@@ -1,0 +1,12 @@
+node_modules/
+# Published papers stay out of the repo
+papers/
+# Screen recordings: share them directly instead of committing them
+*.mp4
+.DS_Store
+Thumbs.db
+desktop.ini
+# Forsch et al. code and libraries: downloaded by forsch/get_forsch.ps1, not ours to commit
+forsch/lib/
+forsch/src/
+forsch/build/
