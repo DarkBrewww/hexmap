@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kansas Morph Comparison</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f5f6f8;
+    --surface: #ffffff;
+    --fg: #15181d;
+    --fg-2: #48505b;
+    --fg-3: #7a828e;
+    --line: #dce0e6;
+    --accent: #2a6fc9;
+    --accent-soft: rgba(42, 111, 201, 0.16);
+    --warn: #c63a3a;
+    --warn-soft: rgba(198, 58, 58, 0.18);
+    --font-body: system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: ui-monospace, "Cascadia Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0f1114;
+      --surface: #171a1f;
+      --fg: #e6e8eb;
+      --fg-2: #a8afb9;
+      --fg-3: #7c8490;
+      --line: #2a2f37;
+      --accent: #5c9cea;
+      --accent-soft: rgba(92, 156, 234, 0.20);
+      --warn: #e26a6a;
+      --warn-soft: rgba(226, 106, 106, 0.22);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0f1114;
+    --surface: #171a1f;
+    --fg: #e6e8eb;
+    --fg-2: #a8afb9;
+    --fg-3: #7c8490;
+    --line: #2a2f37;
+    --accent: #5c9cea;
+    --accent-soft: rgba(92, 156, 234, 0.20);
+    --warn: #e26a6a;
+    --warn-soft: rgba(226, 106, 106, 0.22);
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 var(--font-body); }
+  main { max-width: 1240px; margin: 0 auto; padding: 20px 16px 28px; display: grid; gap: 12px; }
+  h1 { font-size: 20px; font-weight: 650; margin: 0; }
+  h2 { font-size: 15px; font-weight: 650; margin: 0 0 4px; }
+  .sub { color: var(--fg-2); margin: 2px 0 0; max-width: 96ch; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; color: var(--fg-2); }
+  .controls label { display: inline-flex; align-items: center; gap: 8px; }
+  output { font-family: var(--font-mono); font-size: 13px; color: var(--fg); font-variant-numeric: tabular-nums; min-width: 3em; }
+  button { font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 7px; padding: 6px 12px; cursor: pointer; }
+  button:hover { border-color: var(--fg-3); }
+  button.primary { background: var(--fg); color: var(--surface); border-color: var(--fg); min-width: 72px; }
+  input[type="range"] { accent-color: var(--accent); width: 220px; }
+  input[type="checkbox"] { accent-color: var(--accent); }
+  :is(button, input):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+  .stage { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; min-width: 0; }
+  .how { color: var(--fg-2); font-size: 13.5px; margin: 0 0 6px; min-height: 2.9em; }
+  .stage svg { display: block; width: 100%; height: auto; }
+  .stats { margin: 6px 0 0; color: var(--fg-2); font-size: 13.5px; font-variant-numeric: tabular-nums; }
+  .stats b { color: var(--fg); font-weight: 600; }
+  .stats .bad { color: var(--warn); font-weight: 600; }
+  .d-hex { fill: none; stroke: var(--fg-2); stroke-width: 1.5; stroke-dasharray: 6 4; vector-effect: non-scaling-stroke; }
+  .d-orig { fill: none; stroke: var(--fg-3); stroke-opacity: 0.7; stroke-width: 1; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .d-paths { fill: none; stroke: var(--fg-3); stroke-opacity: 0.5; stroke-width: 0.8; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .d-shape { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.8; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .d-shape.d-crossing { fill: var(--warn-soft); stroke: var(--warn); }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--fg-2); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend svg { width: 22px; height: 12px; flex: none; }
+  details { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  summary { cursor: pointer; font-weight: 600; }
+  details p { margin: 8px 0 0; color: var(--fg-2); max-width: 100ch; }
+  code { font-family: var(--font-mono); font-size: 0.92em; }
+  footer { color: var(--fg-3); font-size: 12.5px; }
+  @media (max-width: 860px) { .pair { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Kansas's 1st: linear morph vs. Forsch et al.</h1>
+    <p class="sub">Same district, same hexagon, same clock. Both sides end on the district's hexagon at its grid position.</p>
+  </header>
+
+  <div class="controls">
+    <button id="play" class="primary" type="button">Play</button>
+    <label for="t">t <input id="t" type="range" min="0" max="1" step="0.001" value="0"><output id="t-val" for="t">0.00</output></label>
+    <label for="paths"><input id="paths" type="checkbox"> Paths</label>
+    <label for="slide"><input id="slide" type="checkbox" checked> Slide to grid position</label>
+  </div>
+
+  <div class="pair">
+    <section class="stage">
+      <h2>Linear (our baseline)</h2>
+      <p class="how">Every point of the outline moves in a straight line to its partner on the hexagon.</p>
+      <svg id="lin" role="img" aria-label="Linear morph of Kansas's 1st into its hexagon"></svg>
+      <p class="stats" id="lin-stats"></p>
+    </section>
+    <section class="stage">
+      <h2>Forsch et al. 2024 (their code)</h2>
+      <p class="how">The outline is made schematic first. Every segment then slides parallel to itself at its own constant speed, so every in-between outline is schematic too.</p>
+      <svg id="fm" role="img" aria-label="Schematic morph of Kansas's 1st into its hexagon, computed with the code of Forsch et al."></svg>
+      <p class="stats" id="fm-stats"></p>
+    </section>
+  </div>
+
+  <div class="legend" aria-hidden="true">
+    <span><svg viewBox="0 0 22 12"><rect x="1" y="1" width="20" height="10" rx="2" class="d-shape"/></svg>outline at t</span>
+    <span><svg viewBox="0 0 22 12"><line x1="1" y1="6" x2="21" y2="6" class="d-orig"/></svg>district outline</span>
+    <span><svg viewBox="0 0 22 12"><line x1="1" y1="6" x2="21" y2="6" class="d-hex"/></svg>target hexagon</span>
+    <span><svg viewBox="0 0 22 12"><line x1="1" y1="6" x2="21" y2="6" class="d-paths" style="stroke-opacity:1"/></svg>path of each vertex</span>
+    <span><svg viewBox="0 0 22 12"><rect x="1" y="1" width="20" height="10" rx="2" class="d-shape d-crossing"/></svg>outline crossing itself</span>
+  </div>
+
+  <details>
+    <summary>How the right side was made</summary>
+    <p><b>Schematic outline.</b> The Census outline (133 points) is simplified with Douglas-Peucker, each edge is replaced by at most two segments on allowed directions, and slivers shorter than 2 squashed units are folded away: 24 segments. This step is ours; the paper starts from outlines that are already schematic.</p>
+    <p><b>Directions.</b> Their code knows only rectilinear and octilinear directions. Before the run, x is squashed by tan 30°, which turns the hexagon's slanted sides into 45° sides; after the run it is stretched back. So the allowed directions here are 0°, 30°, 90° and 150°: the hexagon's three edge directions plus horizontal. "On allowed directions" below each side measures the share of the outline's length that runs in one of them (within 1°).</p>
+    <p><b>Hexagon inside, then a slide.</b> Their method morphs between outlines that are nested or overlap, while this district's hexagon sits about 3.3 hex steps away on the grid. The hexagon is therefore placed inside the district where it has the most room, their code morphs onto it, and the slide to the grid position is added on top at constant speed. Their code also needs a cut that joins the two outlines; it runs horizontally from the hexagon's upper-left corner to the district's west edge, as the paper asks for a schematic cut line. Untick "Slide to grid position" to see their morph alone.</p>
+    <p><b>Run.</b> Their <code>MorphApp</code> from tag "publication", run with <code>-S OCTILINEAR -T GEODESIC</code> on Java 11. The algorithm code is unmodified; the GeoTools classes it imports are replaced by 8 small stand-ins (a default JTS geometry factory, a WKT reader, and a shapefile export that is never called). Their correspondence: 3 matches, 3 insertions, 22 deletions, timed in 6 transition cells. Their own checks: self-crossings no, self-contained yes. The page plays their 7 keyframes with straight-line motion in between, exactly as their SVG output does. Checked over 2,001 in-between frames: every edge within 0.05° of an allowed direction, no crossings.</p>
+  </details>
+
+  <footer>Forsch, Kemna, Langetepe and Haunert (2024), Polyline Morphing for Animated Schematic Maps, Journal of Geovisualization and Spatial Analysis 8:37. Code: gitlab.igg.uni-bonn.de/forsch/traveltimemaps, tag "publication". District: Census cb_2024_us_cd119_20m, projected with d3.geoAlbersUsa as in index.html. Hex layout: Congressional District Health Dashboard, NYU Langone Health.</footer>
+</main>
+
+<script type="application/json" id="data">{"outline":[[402.932,222.731],[406.038,222.928],[410.14,223.18],[411.997,223.288],[413.228,223.358],[413.653,223.382],[416.961,223.567],[421.229,223.788],[421.512,223.802],[425.218,223.992],[429.232,224.179],[429.456,224.188],[434.617,224.409],[437.239,224.504],[437.281,224.506],[439.031,224.567],[443.602,224.726],[444.927,224.769],[445.191,224.778],[450.017,224.921],[451.613,224.965],[453.162,225.007],[456.428,225.09],[459.234,225.155],[461.277,225.199],[462.841,225.231],[463.469,225.243],[468.591,225.332],[469.252,225.343],[474.355,225.416],[475.67,225.429],[476.274,225.435],[477.238,225.445],[481.999,225.485],[482.087,225.485],[485.269,225.502],[485.252,233.691],[488.148,233.698],[491.668,233.697],[492.674,233.695],[494.795,234.449],[494.801,236.456],[500.366,236.416],[500.425,241.89],[500.338,243.489],[500.364,244.989],[499.341,245.929],[498.223,245.421],[498.204,243.78],[497.807,243.666],[497.455,243.422],[496.836,243.039],[495.838,243.283],[494.452,243.139],[494.544,240.284],[488.151,240.288],[488.149,241.654],[488.1,241.985],[487.462,240.722],[485.311,240.364],[483.907,241.366],[483.081,241.099],[483.046,243.543],[481.461,243.528],[476.437,242.653],[476.481,240.187],[474.879,240.151],[474.872,241.451],[474.841,241.806],[474.804,244.962],[475.343,244.703],[475.841,246.76],[475.298,247.847],[475.216,251.671],[468.834,251.594],[468.718,259.809],[463.92,259.729],[463.829,264.678],[463.818,268.002],[462.221,267.995],[452.614,267.802],[452.652,266.34],[452.55,266.068],[452.713,259.502],[452.751,258.26],[452.654,257.84],[446.373,257.656],[444.778,257.604],[443.789,258.992],[443.138,259.19],[436.772,258.955],[436.716,260.605],[436.587,263.89],[436.515,265.537],[436.612,267.253],[436.474,272.289],[436.429,273.724],[436.603,273.928],[436.366,281.113],[434.645,281.042],[429.665,280.815],[429.556,280.81],[428.273,280.758],[421.438,280.461],[420.247,280.415],[416.966,280.28],[415.64,280.218],[413.855,280.134],[411.715,280.03],[407.675,279.831],[406.643,279.777],[401.522,279.498],[399.667,279.392],[399.46,279.38],[399.515,278.59],[399.6,277.245],[399.782,274.392],[399.939,271.926],[400.246,267.125],[400.341,265.627],[400.357,265.351],[400.773,258.301],[400.946,255.489],[400.954,255.37],[401.088,253.193],[401.356,248.85],[401.452,247.299],[401.859,240.722],[401.953,239.101],[402.216,234.573],[402.435,230.913],[402.442,230.803],[402.718,226.194]],"hex":[[357.984,218.712],[357.984,205.375],[346.434,198.707],[334.884,205.375],[334.884,218.712],[346.434,225.38]],"linear":{"src":[402.718,226.194,402.442,230.803,402.435,230.913,402.216,234.573,401.953,239.101,401.859,240.722,401.452,247.299,401.356,248.85,401.088,253.193,400.954,255.37,400.946,255.489,400.773,258.301,400.357,265.351,400.341,265.627,400.246,267.125,399.939,271.926,399.782,274.392,399.6,277.245,399.515,278.59,399.46,279.38,399.667,279.392,401.522,279.498,404.334,279.651,406.643,279.777,407.675,279.831,411.715,280.03,413.855,280.134,415.64,280.218,416.966,280.28,420.247,280.415,421.438,280.461,428.273,280.758,429.556,280.81,429.665,280.815,434.645,281.042,436.366,281.113,436.603,273.928,436.429,273.724,436.474,272.289,436.612,267.253,436.515,265.537,436.587,263.89,436.716,260.605,436.772,258.955,440.636,259.098,443.138,259.19,443.789,258.992,444.778,257.604,446.373,257.656,452.654,257.84,452.751,258.26,452.713,259.502,452.55,266.068,452.652,266.34,452.614,267.802,462.221,267.995,463.818,268.002,463.829,264.678,463.92,259.729,468.718,259.809,468.834,251.594,471.744,251.629,475.216,251.671,475.298,247.847,475.841,246.76,475.343,244.703,474.804,244.962,474.841,241.806,474.872,241.451,474.879,240.151,476.481,240.187,476.437,242.653,481.461,243.528,483.046,243.543,483.081,241.099,483.907,241.366,485.311,240.364,487.462,240.722,488.1,241.985,488.149,241.654,488.151,240.288,494.544,240.284,494.452,243.139,495.838,243.283,496.836,243.039,497.455,243.422,497.807,243.666,498.204,243.78,498.223,245.421,499.341,245.929,500.364,244.989,500.338,243.489,500.425,241.89,500.42,241.449,500.366,236.416,494.801,236.456,494.795,234.449,492.674,233.695,491.668,233.697,488.148,233.698,485.252,233.691,485.269,225.502,482.087,225.485,481.999,225.485,477.238,225.445,476.274,225.435,475.67,225.429,474.355,225.416,469.252,225.343,468.591,225.332,463.469,225.243,462.841,225.231,461.277,225.199,459.234,225.155,457.573,225.116,456.428,225.09,453.162,225.007,451.613,224.965,450.017,224.921,445.191,224.778,444.927,224.769,443.602,224.726,439.031,224.567,437.281,224.506,437.239,224.504,434.617,224.409,429.456,224.188,429.232,224.179,425.218,223.992,421.512,223.802,421.229,223.788,416.961,223.567,413.653,223.382,413.228,223.358,411.997,223.288,410.14,223.18,406.038,222.928,402.932,222.731],"dst":[334.884,205.375,334.884,206.434,334.884,206.459,334.884,207.3,334.884,208.34,334.884,208.712,334.884,210.223,334.884,210.579,334.884,211.577,334.884,212.077,334.884,212.104,334.884,212.75,334.884,214.369,334.884,214.433,334.884,214.777,334.884,215.88,334.884,216.446,334.884,217.102,334.884,217.411,334.884,217.593,334.884,217.64,334.884,218.066,334.884,218.712,335.344,218.977,335.549,219.095,336.352,219.559,336.777,219.805,337.132,220.01,337.396,220.162,338.048,220.538,338.284,220.675,339.643,221.459,339.898,221.606,339.919,221.619,340.909,222.19,341.251,222.388,342.679,223.212,342.732,223.243,343.017,223.407,344.017,223.985,344.359,224.182,344.686,224.371,345.339,224.748,345.667,224.937,346.434,225.38,346.931,225.093,347.067,225.015,347.405,224.82,347.722,224.637,348.97,223.916,349.055,223.867,349.302,223.724,350.606,222.972,350.664,222.938,350.954,222.771,352.862,221.669,353.179,221.486,353.839,221.105,354.822,220.537,355.775,219.987,357.406,219.045,357.984,218.712,357.984,217.916,357.984,217.039,357.984,216.76,357.984,216.275,357.984,216.138,357.984,215.414,357.984,215.333,357.984,215.034,357.984,214.667,357.984,214.101,357.984,212.932,357.984,212.569,357.984,212.008,357.984,211.809,357.984,211.414,357.984,210.914,357.984,210.589,357.984,210.513,357.984,210.199,357.984,208.734,357.984,208.079,357.984,207.759,357.984,207.523,357.984,207.357,357.984,207.258,357.984,207.164,357.984,206.787,357.984,206.506,357.984,206.187,357.984,205.843,357.984,205.476,357.984,205.375,356.985,204.798,355.88,204.16,355.481,203.93,355.034,203.672,354.834,203.557,354.135,203.153,353.56,202.821,351.934,201.882,351.302,201.517,351.285,201.507,350.34,200.961,350.148,200.851,350.028,200.782,349.767,200.631,348.754,200.046,348.622,199.97,347.605,199.383,347.481,199.311,347.17,199.132,346.764,198.897,346.434,198.707,346.207,198.838,345.558,199.213,345.251,199.39,344.934,199.573,343.975,200.127,343.922,200.157,343.659,200.309,342.751,200.833,342.403,201.034,342.395,201.039,341.874,201.34,340.848,201.932,340.804,201.958,340.006,202.418,339.269,202.844,339.213,202.876,338.364,203.366,337.706,203.746,337.622,203.795,337.377,203.936,337.007,204.149,336.191,204.62,335.573,204.977]},"forsch":{"keyTimes":[0,0.10024548,0.334787586,0.430044102,0.575631149,0.70118893,1],"states":[[[399.46,238.445],[399.46,279.38],[399.46,279.38],[399.46,279.38],[399.46,279.38],[402.462,281.113],[402.462,281.113],[436.366,281.113],[436.366,281.113],[436.366,259.19],[436.366,259.19],[436.366,259.19],[436.366,259.19],[450.317,259.19],[450.317,259.19],[450.317,259.19],[450.317,266.475],[452.962,268.002],[452.962,268.002],[463.818,268.002],[463.818,268.002],[468.834,265.106],[468.834,265.106],[468.834,251.594],[468.834,251.594],[468.834,251.594],[475.082,251.594],[475.082,240.269],[475.082,240.269],[475.082,240.269],[480.754,243.543],[485.311,240.912],[485.311,240.912],[493.456,240.912],[493.456,240.912],[493.456,240.912],[500.364,244.901],[500.364,236.418],[500.364,236.418],[495.642,233.691],[495.642,233.691],[485.252,233.691],[485.252,233.691],[485.252,225.512],[485.252,225.512],[480.435,222.731],[480.435,222.731],[402.718,222.731],[402.718,222.731],[402.718,222.731],[402.718,222.731],[402.718,226.194],[402.718,226.194],[399.46,228.075],[399.46,228.075],[399.46,238.445]],[[399.46,238.445],[399.46,279.38],[399.46,279.38],[399.46,279.38],[399.46,279.38],[402.462,281.113],[402.462,281.113],[436.366,281.113],[436.366,281.113],[436.366,259.19],[436.366,259.19],[436.366,259.19],[436.366,259.19],[450.317,259.19],[450.317,259.19],[450.317,259.19],[450.317,266.475],[452.962,268.002],[452.962,268.002],[463.818,268.002],[463.818,268.002],[468.834,265.106],[468.834,265.106],[468.834,251.594],[468.834,251.594],[468.834,251.594],[475.082,251.594],[475.082,240.269],[475.082,240.269],[475.082,240.269],[480.754,243.543],[485.311,240.912],[485.311,240.912],[493.456,240.912],[493.456,240.912],[493.456,240.912],[493.456,240.912],[493.456,236.621],[493.456,236.621],[489.207,234.168],[489.207,234.168],[479.859,234.168],[479.859,234.168],[479.859,226.809],[479.859,226.809],[475.525,224.306],[475.525,224.306],[405.71,224.306],[405.71,224.306],[405.71,224.306],[405.71,224.306],[405.71,227.166],[405.71,227.166],[401.008,229.881],[401.008,229.881],[401.008,238.445]],[[399.46,238.445],[399.46,279.38],[399.46,279.38],[399.46,279.38],[399.46,279.38],[402.462,281.113],[402.462,281.113],[436.366,281.113],[436.366,281.113],[436.366,259.19],[436.366,259.19],[436.366,259.19],[436.366,259.19],[450.317,259.19],[450.317,259.19],[450.317,259.19],[450.317,266.475],[452.962,268.002],[452.962,268.002],[463.818,268.002],[463.818,268.002],[468.834,265.106],[468.834,265.106],[468.834,251.594],[468.834,251.594],[468.834,251.594],[475.082,251.594],[475.082,240.269],[475.082,240.269],[475.082,240.269],[475.082,240.269],[475.082,240.269],[475.082,240.269],[477.292,240.269],[477.292,240.269],[477.292,240.269],[477.292,240.269],[477.292,237.096],[477.292,237.096],[474.151,235.283],[474.151,235.283],[467.239,235.283],[467.239,235.283],[467.239,229.842],[467.239,229.842],[464.035,227.992],[464.035,227.992],[412.71,227.992],[412.71,227.992],[412.71,227.992],[412.71,227.992],[412.71,229.441],[412.71,229.441],[404.63,234.106],[404.63,234.106],[404.63,238.445]],[[399.46,238.445],[399.46,279.38],[399.46,279.38],[399.46,279.38],[399.46,279.38],[402.462,281.113],[402.462,281.113],[436.366,281.113],[436.366,281.113],[436.366,259.19],[436.366,259.19],[436.366,259.19],[436.366,259.19],[450.317,259.19],[450.317,259.19],[450.317,259.19],[450.317,266.475],[452.962,268.002],[452.962,268.002],[463.818,268.002],[463.818,268.002],[468.834,265.106],[468.834,265.106],[468.834,251.594],[468.834,251.594],[468.834,251.594],[468.834,251.594],[468.834,240.008],[468.834,240.008],[468.834,240.008],[468.834,240.008],[468.834,240.008],[468.834,240.008],[470.727,240.008],[470.727,240.008],[470.727,240.008],[470.727,240.008],[470.727,237.289],[470.727,237.289],[468.036,235.735],[468.036,235.735],[462.114,235.735],[462.114,235.735],[462.114,231.074],[462.114,231.074],[459.369,229.489],[459.369,229.489],[415.553,229.489],[415.553,229.489],[415.553,229.489],[415.553,229.489],[415.553,230.365],[415.553,230.365],[406.101,235.822],[406.101,235.822],[406.101,238.445]],[[399.46,238.445],[399.46,279.38],[399.46,279.38],[399.46,279.38],[399.46,279.38],[402.462,281.113],[402.462,281.113],[436.366,281.113],[436.366,281.113],[436.366,259.19],[436.366,259.19],[436.366,259.19],[436.366,259.19],[450.317,259.19],[450.317,259.19],[450.317,259.19],[450.317,262.563],[451.541,263.271],[451.541,263.271],[456.568,263.271],[456.568,263.271],[459.285,261.702],[459.285,261.702],[459.285,251.642],[459.285,251.642],[459.285,251.642],[459.285,251.642],[459.285,239.608],[459.285,239.608],[459.285,239.608],[459.285,239.608],[459.285,239.608],[459.285,239.608],[460.694,239.608],[460.694,239.608],[460.694,239.608],[460.694,239.608],[460.694,237.584],[460.694,237.584],[458.69,236.427],[458.69,236.427],[454.281,236.427],[454.281,236.427],[454.281,232.956],[454.281,232.956],[452.237,231.776],[452.237,231.776],[419.898,231.776],[419.898,231.776],[419.898,231.776],[419.898,231.776],[419.898,231.776],[419.898,231.776],[408.349,238.445],[408.349,238.445],[408.349,238.445]],[[399.46,238.445],[399.46,279.38],[399.46,279.38],[399.46,279.38],[399.46,279.38],[402.462,281.113],[402.462,281.113],[436.366,281.113],[436.366,281.113],[436.366,259.19],[436.366,259.19],[436.366,259.19],[436.366,259.19],[450.317,259.19],[450.317,259.19],[450.317,259.19],[450.317,259.19],[450.317,259.19],[450.317,259.19],[450.317,259.19],[450.317,259.19],[451.049,258.767],[451.049,258.767],[451.049,251.683],[451.049,251.683],[451.049,251.683],[451.049,251.683],[451.049,239.264],[451.049,239.264],[451.049,239.264],[451.049,239.264],[451.049,239.264],[451.049,239.264],[452.041,239.264],[452.041,239.264],[452.041,239.264],[452.041,239.264],[452.041,237.839],[452.041,237.839],[450.63,237.024],[450.63,237.024],[447.526,237.024],[447.526,237.024],[447.526,234.58],[447.526,234.58],[446.086,233.749],[446.086,233.749],[423.316,233.749],[419.898,231.776],[419.898,231.776],[419.898,231.776],[419.898,231.776],[419.898,231.776],[408.349,238.445],[408.349,238.445],[408.349,238.445]],[[408.349,238.445],[408.349,251.781],[408.349,251.781],[419.898,258.45],[419.898,258.45],[419.898,258.45],[419.898,258.45],[419.898,258.45],[419.898,258.45],[419.898,258.45],[419.898,258.45],[431.448,251.781],[431.448,251.781],[431.448,251.781],[431.448,251.781],[431.448,251.781],[431.448,251.781],[431.448,251.781],[431.448,251.781],[431.448,251.781],[431.448,251.781],[431.448,251.781],[431.448,251.781],[431.448,251.781],[431.448,251.781],[431.448,251.781],[431.448,251.781],[431.448,238.445],[431.448,238.445],[431.448,238.445],[431.448,238.445],[431.448,238.445],[431.448,238.445],[431.448,238.445],[431.448,238.445],[431.448,238.445],[431.448,238.445],[431.448,238.445],[431.448,238.445],[431.448,238.445],[431.448,238.445],[431.448,238.445],[431.448,238.445],[431.448,238.445],[431.448,238.445],[431.448,238.445],[431.448,238.445],[431.448,238.445],[419.898,231.776],[419.898,231.776],[419.898,231.776],[419.898,231.776],[419.898,231.776],[408.349,238.445],[408.349,238.445],[408.349,238.445]]],"slide":[-73.464,-33.07],"placedHex":[[431.448,251.781],[431.448,238.445],[419.898,231.776],[408.349,238.445],[408.349,251.781],[419.898,258.45]],"segments":24}}</script>
+<script>
+(function () {
+  "use strict";
+  const D = JSON.parse(document.getElementById("data").textContent);
+  const NS = "http://www.w3.org/2000/svg";
+  const DURATION = 4000;
+  const ALLOWED = [0, 30, 90, 150], TOL = 1;
+
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, attrs, parent) => {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  };
+  const pts = (xs, ys) => { let s = ""; for (let i = 0; i < xs.length; i++) s += (i ? " " : "") + xs[i].toFixed(2) + "," + ys[i].toFixed(2); return s; };
+  const ringPts = (r) => r.map(([x, y]) => x.toFixed(2) + "," + y.toFixed(2)).join(" ");
+
+  // Share of the outline's length running in an allowed direction.
+  function onAllowed(xs, ys) {
+    let ok = 0, all = 0;
+    for (let i = 0, m = xs.length; i < m; i++) {
+      const j = (i + 1) % m, dx = xs[j] - xs[i], dy = ys[i] - ys[j];
+      const L = Math.hypot(dx, dy);
+      if (L < 1e-9) continue;
+      let a = Math.atan2(dy, dx) * 180 / Math.PI;
+      a = ((a % 180) + 180) % 180;
+      all += L;
+      if (ALLOWED.some((b) => Math.min(Math.abs(a - b), 180 - Math.abs(a - b)) <= TOL)) ok += L;
+    }
+    return all ? ok / all : 1;
+  }
+  // Same self-crossing test as index.html: proper crossings only, touching does not count.
+  function crossesItself(xs, ys) {
+    const m = xs.length, EPS = 1e-7;
+    const o = (a, b, c) => { const v = (xs[b] - xs[a]) * (ys[c] - ys[a]) - (ys[b] - ys[a]) * (xs[c] - xs[a]); return Math.abs(v) < EPS ? 0 : v; };
+    for (let a = 0; a < m; a++) {
+      for (let b = a + 2; b < m; b++) {
+        if (a === 0 && b === m - 1) continue;
+        const a2 = (a + 1) % m, b2 = (b + 1) % m;
+        if (o(a, a2, b) * o(a, a2, b2) < 0 && o(b, b2, a) * o(b, b2, a2) < 0) return true;
+      }
+    }
+    return false;
+  }
+
+  // ---- Linear side: precomputed pairs (index.html section 3, best phase) ----
+  const L = D.linear, nL = L.src.length / 2;
+  function linearAt(t) {
+    const xs = new Float64Array(nL), ys = new Float64Array(nL);
+    for (let i = 0; i < nL; i++) {
+      xs[i] = L.src[2 * i] + (L.dst[2 * i] - L.src[2 * i]) * t;
+      ys[i] = L.src[2 * i + 1] + (L.dst[2 * i + 1] - L.src[2 * i + 1]) * t;
+    }
+    return [xs, ys];
+  }
+
+  // ---- Forsch side: keyframes from their morph.svg, linear between keyframes ----
+  const F = D.forsch, KT = F.keyTimes;
+  const nF = F.states[0].length;
+  function forschAt(t, slide) {
+    let i = 0;
+    while (i < KT.length - 2 && t > KT[i + 1]) i++;
+    const span = KT[i + 1] - KT[i];
+    const u = span > 0 ? Math.min(1, Math.max(0, (t - KT[i]) / span)) : 1;
+    const A = F.states[i], B = F.states[i + 1];
+    const sx = slide ? F.slide[0] * t : 0, sy = slide ? F.slide[1] * t : 0;
+    const xs = new Float64Array(nF), ys = new Float64Array(nF);
+    for (let j = 0; j < nF; j++) {
+      xs[j] = A[j][0] + (B[j][0] - A[j][0]) * u + sx;
+      ys[j] = A[j][1] + (B[j][1] - A[j][1]) * u + sy;
+    }
+    return [xs, ys];
+  }
+
+  // ---- Views: one shared box that holds the district and the hexagon's grid position ----
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const [x, y] of D.outline.concat(D.hex)) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+  const pad = 6, vb = [x0 - pad, y0 - pad, x1 - x0 + 2 * pad, y1 - y0 + 2 * pad].map((v) => v.toFixed(2)).join(" ");
+
+  function makeView(svg) {
+    svg.setAttribute("viewBox", vb);
+    el("polygon", { points: ringPts(D.outline), class: "d-orig" }, svg);
+    const hex = el("polygon", { class: "d-hex" }, svg);
+    const paths = el("g", { class: "d-paths" }, svg);
+    const shape = el("polygon", { class: "d-shape" }, svg);
+    return { hex, paths, shape };
+  }
+  const VL = makeView($("lin")), VF = makeView($("fm"));
+  VL.hex.setAttribute("points", ringPts(D.hex));
+
+  // Paths of the vertices over the whole morph.
+  function drawPaths() {
+    VL.paths.textContent = ""; VF.paths.textContent = "";
+    if (!pathsIn.checked) return;
+    for (let i = 0; i < nL; i++) {
+      el("line", { x1: L.src[2 * i], y1: L.src[2 * i + 1], x2: L.dst[2 * i], y2: L.dst[2 * i + 1] }, VL.paths);
+    }
+    const slide = slideIn.checked;
+    for (let j = 0; j < nF; j++) {
+      const xs = [], ys = [];
+      for (let k = 0; k < KT.length; k++) {
+        xs.push(F.states[k][j][0] + (slide ? F.slide[0] * KT[k] : 0));
+        ys.push(F.states[k][j][1] + (slide ? F.slide[1] * KT[k] : 0));
+      }
+      el("polyline", { points: pts(xs, ys) }, VF.paths);
+    }
+  }
+
+  const tIn = $("t"), tOut = $("t-val"), playBtn = $("play"), pathsIn = $("paths"), slideIn = $("slide");
+  const pct = (v) => Math.round(v * 100) + "%";
+
+  function render() {
+    const t = +tIn.value, slide = slideIn.checked;
+    tOut.textContent = t.toFixed(2);
+    const [lx, ly] = linearAt(t);
+    const lCross = crossesItself(lx, ly);
+    VL.shape.setAttribute("points", pts(lx, ly));
+    VL.shape.classList.toggle("d-crossing", lCross);
+    $("lin-stats").innerHTML = `${nL} points. On allowed directions: <b>${pct(onAllowed(lx, ly))}</b>. Crosses itself: ${lCross ? '<span class="bad">yes</span>' : "<b>no</b>"}.`;
+
+    const [fx, fy] = forschAt(t, slide);
+    const fCross = crossesItself(fx, fy);
+    VF.shape.setAttribute("points", pts(fx, fy));
+    VF.shape.classList.toggle("d-crossing", fCross);
+    VF.hex.setAttribute("points", ringPts(slide ? D.hex : F.placedHex));
+    $("fm-stats").innerHTML = `${F.segments} segments to 6. On allowed directions: <b>${pct(onAllowed(fx, fy))}</b>. Crosses itself: ${fCross ? '<span class="bad">yes</span>' : "<b>no</b>"}.`;
+  }
+
+  let raf = 0, start = 0;
+  function stop() { cancelAnimationFrame(raf); raf = 0; playBtn.textContent = "Play"; }
+  function frame(now) {
+    const t = Math.min(1, (now - start) / DURATION);
+    tIn.value = String(t);
+    render();
+    if (t < 1) raf = requestAnimationFrame(frame); else stop();
+  }
+  playBtn.addEventListener("click", () => {
+    if (raf) { stop(); return; }
+    let t = +tIn.value;
+    if (t >= 1) t = 0;
+    start = performance.now() - t * DURATION;
+    playBtn.textContent = "Pause";
+    raf = requestAnimationFrame(frame);
+  });
+  tIn.addEventListener("input", () => { stop(); render(); });
+  pathsIn.addEventListener("change", drawPaths);
+  slideIn.addEventListener("change", () => { drawPaths(); render(); });
+  drawPaths();
+  render();
+})();
+</script>
+</body>
+</html>

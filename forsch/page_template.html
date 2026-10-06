@@ -110,7 +110,7 @@
     </section>
     <section class="stage">
       <h2>Forsch et al. 2024 (their code)</h2>
-      <p class="how">The outline is made schematic first. Every vertex then moves along a schematic path at constant speed, so every in-between outline is schematic too.</p>
+      <p class="how">The outline is made schematic first. Every segment then slides parallel to itself at its own constant speed, so every in-between outline is schematic too.</p>
       <svg id="fm" role="img" aria-label="Schematic morph of Kansas's 1st into its hexagon, computed with the code of Forsch et al."></svg>
       <p class="stats" id="fm-stats"></p>
     </section>
@@ -128,11 +128,11 @@
     <summary>How the right side was made</summary>
     <p><b>Schematic outline.</b> __SCHEMATIC__</p>
     <p><b>Directions.</b> Their code knows only rectilinear and octilinear directions. Before the run, x is squashed by tan 30°, which turns the hexagon's slanted sides into 45° sides; after the run it is stretched back. So the allowed directions here are 0°, 30°, 90° and 150°: the hexagon's three edge directions plus horizontal. "On allowed directions" below each side measures the share of the outline's length that runs in one of them (within 1°).</p>
-    <p><b>Hexagon inside, then a slide.</b> Their method morphs between outlines that are nested or overlap, while this district's hexagon sits about __SLIDE__ hex steps away on the grid. The hexagon is therefore placed inside the district where it has the most room, their code morphs onto it, and the slide to the grid position is added on top at constant speed. Untick "Slide to grid position" to see their morph alone.</p>
+    <p><b>Hexagon inside, then a slide.</b> Their method morphs between outlines that are nested or overlap, while this district's hexagon sits about __SLIDE__ hex steps away on the grid. The hexagon is therefore placed inside the district where it has the most room, their code morphs onto it, and the slide to the grid position is added on top at constant speed. Their code also needs a cut that joins the two outlines; it runs horizontally from the hexagon's upper-left corner to the district's west edge, as the paper asks for a schematic cut line. Untick "Slide to grid position" to see their morph alone.</p>
     <p><b>Run.</b> __RUN__</p>
   </details>
 
-  <footer>Forsch, Amann, Haunert (2024), Polyline morphing for animated schematic maps. Code: gitlab.igg.uni-bonn.de/forsch/traveltimemaps, tag "publication". District: Census cb_2024_us_cd119_20m, projected with d3.geoAlbersUsa as in index.html. Hex layout: Congressional District Health Dashboard, NYU Langone Health.</footer>
+  <footer>Forsch, Kemna, Langetepe and Haunert (2024), Polyline Morphing for Animated Schematic Maps, Journal of Geovisualization and Spatial Analysis 8:37. Code: gitlab.igg.uni-bonn.de/forsch/traveltimemaps, tag "publication". District: Census cb_2024_us_cd119_20m, projected with d3.geoAlbersUsa as in index.html. Hex layout: Congressional District Health Dashboard, NYU Langone Health.</footer>
 </main>
 
 <script type="application/json" id="data">__DATA__</script>

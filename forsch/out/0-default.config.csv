@@ -1,0 +1,10 @@
+param,value
+program,DEFAULT
+schematization,OCTILINEAR
+l,1
+noNormalization,false
+sourceString,input/source.wkt
+targetString,input/target.wkt
+outputDir,out
+schematization,OCTILINEAR
+traces,GEODESIC
