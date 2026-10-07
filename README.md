@@ -61,12 +61,12 @@ To rebuild `hexmap_data.js` from `cb_2024_us_cd119_20m.zip` and `cdhd_hex_119.ge
 
 `forsch_kansas.html` plays Kansas's 1st two ways, side by side: the linear baseline on the left, and on the right the morph computed by the code of Forsch, Kemna, Langetepe and Haunert (2024), "Polyline Morphing for Animated Schematic Maps". Their method keeps every in-between outline schematic and free of self-crossings. Under each side the page shows how much of the outline runs in an allowed direction and whether it crosses itself. It works offline.
 
-Three things differ from the paper's own setting, and the page's "How the right side was made" box explains each. Their code only morphs schematic outlines, so the district is schematized first (`forsch/prep_input.cjs`, 133 points to 24 segments). Their code only knows octilinear directions, so x is squashed by tan 30° before the run and stretched back after it, which gives directions of 0°, 30°, 90° and 150°. Their method expects outlines that are nested or overlap, so the hexagon is placed inside the district and a constant-speed slide to its grid position is added on top.
+Three things differ from the paper's own setting, and the page's "How the right side was made" box explains each. Their code only morphs schematic outlines, so the district is schematized first (`forsch/prep_input.cjs`, 133 points to 49 segments). Their code only knows octilinear directions, so x is squashed by tan 30° before the run and stretched back after it, which gives directions of 0°, 30°, 90° and 150°. Their method expects outlines that are nested or overlap, so the hexagon is placed inside the district and a constant-speed slide to its grid position is added on top.
 
 To rerun it you need a JDK 11 or newer and Node. On Windows, `forsch/get_forsch.ps1` downloads their code (tag "publication") into `forsch/src` and the nine jars it needs into `forsch/lib`; elsewhere, fetch the files the script lists. The rest is bash, run from `forsch/`:
 
 ```
-node prep_input.cjs 2 2 write
+node prep_input.cjs 0.4 0.5 write
 mkdir -p build && find src shims -name '*.java' ! -name module-info.java > build/sources.txt
 javac --release 11 -d build/classes -cp "lib/*" @build/sources.txt
 java -cp "build/classes:lib/*" de.geoinfobonn.traveltimemaps.schematicmorph.MorphApp -s input/source.wkt -t input/target.wkt -o out -S OCTILINEAR -T GEODESIC

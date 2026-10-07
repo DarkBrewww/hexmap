@@ -4,7 +4,7 @@
 // screen coordinates of index.html (geoAlbersUsa, hex grid fitted onto the map).
 // Output (with "write"): input/source.wkt, input/target.wkt, input/transform.json.
 //
-//   node prep_input.cjs 2 2 write      (Douglas-Peucker tolerance, shortest segment)
+//   node prep_input.cjs 0.4 0.5 write  (Douglas-Peucker tolerance, shortest segment; about 50 segments)
 //
 // Their code only knows rectilinear and octilinear directions. Squashing x by tan(30°)
 // turns the hexagon's slanted sides into 45° sides, so the hexagon becomes octilinear.
@@ -205,6 +205,6 @@ const wkt = (r) => "LINEARRING (" + r.concat([r[0]]).map(([x, y]) => f6(x) + " "
 if (process.argv[4] === "write") {
   fs.writeFileSync(__dirname + "/input/source.wkt", wkt(S) + "\n");
   fs.writeFileSync(__dirname + "/input/target.wkt", wkt(H) + "\n");
-  fs.writeFileSync(__dirname + "/input/transform.json", JSON.stringify({ district: NAME, k: K, centroid: [CX, CY], hexCenter: d.center, hexCorners: d.corners, hexOffsetSquashed: bestC, placedHexCenter: Tinv(bestC), originalRing: main, note: "screen -> squashed: X = (x - cx) * k, Y = -(y - cy). Inverse: x = X / k + cx, y = -Y + cy." }));
+  fs.writeFileSync(__dirname + "/input/transform.json", JSON.stringify({ district: NAME, tolerance: tol, minLen, k: K, centroid: [CX, CY], hexCenter: d.center, hexCorners: d.corners, hexOffsetSquashed: bestC, placedHexCenter: Tinv(bestC), originalRing: main, note: "screen -> squashed: X = (x - cx) * k, Y = -(y - cy). Inverse: x = X / k + cx, y = -Y + cy." }));
   console.log("written");
 }

@@ -8,6 +8,7 @@ const fs = require("fs");
 const dir = __dirname;
 const d = JSON.parse(fs.readFileSync(dir + "/input/kansas_1st_screen.json", "utf8"));
 const F = JSON.parse(fs.readFileSync(dir + "/out/forsch_frames.json", "utf8"));
+const TF = JSON.parse(fs.readFileSync(dir + "/input/transform.json", "utf8"));
 
 // ---- Linear side: the pairing code from index.html section 3, at the best phase ----
 const SAMPLES = 60, PHASES = 240;
@@ -119,7 +120,7 @@ function runText() {
     `Checked over ${CHECK.frames.toLocaleString("en-US")} in-between frames: every edge within ${CHECK.worst.toFixed(2)}° of an allowed direction, ${CHECK.crossings ? CHECK.crossings + " frames crossing" : "no crossings"}.`;
 }
 const fill = {
-  __SCHEMATIC__: `The Census outline (${outline.length} points) is simplified with Douglas-Peucker, each edge is replaced by at most two segments on allowed directions, and slivers shorter than 2 squashed units are folded away: ${segments} segments. This step is ours; the paper starts from outlines that are already schematic.`,
+  __SCHEMATIC__: `The Census outline (${outline.length} points) is simplified with Douglas-Peucker (tolerance ${TF.tolerance}), each edge is replaced by at most two segments on allowed directions, and slivers shorter than ${TF.minLen} squashed units are folded away: ${segments} segments. This step is ours; the paper starts from outlines that are already schematic.`,
   __SLIDE__: slideSteps.toFixed(1),
   __RUN__: runText(),
 };
