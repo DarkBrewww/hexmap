@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hexmap Morph Baseline</title>
+<title>Hexmap Morph Comparison</title>
 <style>
   :root {
     color-scheme: light;
@@ -82,6 +82,8 @@
     display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px;
     margin-bottom: 12px;
   }
+  .control-set { display: inline-flex; align-items: center; gap: 7px; }
+  .control-label { color: var(--muted); font-size: 12px; }
   .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
   .seg button { border: 0; border-radius: 0; }
   .seg button + button { border-left: 1px solid var(--border); }
@@ -164,6 +166,11 @@
   .nb-note { color: var(--ink-2); font-size: 13px; margin: 0; }
   .scores-foot { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .scores-status { color: var(--muted); font-size: 12px; }
+  .method-note {
+    margin: -2px 0 12px; padding: 8px 10px; max-width: 116ch;
+    color: var(--ink-2); background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; font-size: 12px;
+  }
 
   footer { margin-top: 16px; color: var(--ink-2); font-size: 12px; }
   footer p { margin: 4px 0; max-width: 120ch; }
@@ -182,13 +189,23 @@
 </head>
 <body>
 <main>
-  <h1>Hexmap morph: linear baseline</h1>
-  <p class="sub">The 436 districts of the 119th Congress (Census, 1:20M) morphing into the hex layout from the Congressional District Health Dashboard. Every point on a district's outline travels in a straight line to a matching point on its hex, and nothing stops districts from overlapping on the way.</p>
+  <h1>Hexmap morph comparison</h1>
+  <p class="sub">The 436 districts of the 119th Congress (Census, 1:20M) morphing into the Congressional District Health Dashboard hex layout. Switch methods without changing the map or hex endpoints, then compare overlap, sampled self-crossings and area change.</p>
 
   <div class="controls">
-    <div class="seg" role="group" aria-label="View">
-      <button id="btn-map" type="button" aria-pressed="true">Map</button>
-      <button id="btn-hex" type="button" aria-pressed="false">Hexes</button>
+    <div class="control-set">
+      <span class="control-label">Method</span>
+      <div class="seg" role="group" aria-label="Morph method">
+        <button id="btn-linear" type="button" aria-pressed="true">Linear</button>
+        <button id="btn-forsch" type="button" aria-pressed="false">Forsch hybrid</button>
+      </div>
+    </div>
+    <div class="control-set">
+      <span class="control-label">Endpoint</span>
+      <div class="seg" role="group" aria-label="View">
+        <button id="btn-map" type="button" aria-pressed="true">Map</button>
+        <button id="btn-hex" type="button" aria-pressed="false">Hexes</button>
+      </div>
     </div>
     <button id="play" type="button">Play</button>
     <label class="slider">t
@@ -211,6 +228,7 @@
       </span>
     </div>
   </div>
+  <p class="method-note" id="method-note"></p>
 
   <div class="stage">
     <figure class="map" id="figure">
@@ -225,8 +243,8 @@
     </figure>
 
     <aside class="scores" aria-labelledby="scores-h">
-      <h2 id="scores-h">Scores per frame</h2>
-      <p class="scores-sub">Computed at 51 frames from t = 0 to 1. Hover a chart to read it, click to jump there.</p>
+      <h2 id="scores-h">Scores per frame · <span id="score-method">Linear</span></h2>
+      <p class="scores-sub">Sampled at 101 frames from t = 0 to 1. Hover a chart to read it, click to jump there. These samples are diagnostics, not continuous-time proofs.</p>
       <div class="charts" id="charts"></div>
       <p class="nb-note" id="nb-note"></p>
       <div class="scores-foot">
@@ -244,11 +262,13 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script src="hexmap_data.js"></script>
+<script src="forsch_map_data.js"></script>
 <script>
 (function () {
   "use strict";
 
   const DATA = window.HEXMAP_DATA;
+  const FORSCH_DATA = window.FORSCH_MAP_DATA || null;
   const statusEl = document.getElementById("status");
   if (!window.d3 || !DATA) {
     statusEl.textContent = !window.d3
@@ -410,6 +430,72 @@
     return { src: Float64Array.from(src), dst: Float64Array.from(dst) };
   }
 
+  // Pair two arbitrary closed rings by normalised arc length. This is used only
+  // for the short original-outline -> schematic-outline introduction in the
+  // Forsch hybrid, so both modes retain exactly the same t=0 map.
+  function flatArea(flat) {
+    let a = 0;
+    const m = flat.length / 2;
+    for (let i = 0; i < m; i++) {
+      const j = (i + 1) % m;
+      a += flat[2 * i] * flat[2 * j + 1] - flat[2 * j] * flat[2 * i + 1];
+    }
+    return a / 2;
+  }
+  function reverseFlat(flat) {
+    const out = new Float64Array(flat.length), m = flat.length / 2;
+    for (let i = 0; i < m; i++) {
+      const j = m - 1 - i;
+      out[2 * i] = flat[2 * j]; out[2 * i + 1] = flat[2 * j + 1];
+    }
+    return out;
+  }
+  function ringSampler(input) {
+    const flat = input instanceof Float64Array ? input : Float64Array.from(input);
+    const m = flat.length / 2, u = new Float64Array(m + 1);
+    for (let i = 0; i < m; i++) {
+      const j = (i + 1) % m;
+      u[i + 1] = u[i] + Math.hypot(flat[2 * j] - flat[2 * i], flat[2 * j + 1] - flat[2 * i + 1]);
+    }
+    const total = u[m] || 1;
+    for (let i = 0; i <= m; i++) u[i] /= total;
+    const at = (f) => {
+      f -= Math.floor(f);
+      let lo = 0, hi = m;
+      while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (u[mid] <= f) lo = mid; else hi = mid; }
+      const j = (lo + 1) % m, span = u[lo + 1] - u[lo] || 1, r = (f - u[lo]) / span;
+      return [flat[2 * lo] + (flat[2 * j] - flat[2 * lo]) * r, flat[2 * lo + 1] + (flat[2 * j + 1] - flat[2 * lo + 1]) * r];
+    };
+    return { flat, m, u, at };
+  }
+  function pairRingsByArc(source, targetInput) {
+    let target = targetInput;
+    if (Math.sign(flatArea(source)) !== Math.sign(flatArea(target))) target = reverseFlat(target);
+    const A = ringSampler(source), B = ringSampler(target), S = 72, P = 144;
+    let phase = 0, best = Infinity;
+    for (let q = 0; q < P; q++) {
+      const shift = q / P;
+      let score = 0;
+      for (let i = 0; i < S; i++) {
+        const a = A.at(i / S), b = B.at(i / S + shift);
+        score += (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2;
+      }
+      if (score < best) { best = score; phase = shift; }
+    }
+    const params = Array.from(A.u.subarray(0, A.m));
+    for (const v of B.u.subarray(0, B.m)) { const f = v - phase; params.push(f - Math.floor(f)); }
+    params.sort((a, b) => a - b);
+    const src = [], dst = [];
+    let previous = -1;
+    for (const f of params) {
+      if (f - previous < 1e-10) continue;
+      previous = f;
+      const a = A.at(f), b = B.at(f + phase);
+      src.push(a[0], a[1]); dst.push(b[0], b[1]);
+    }
+    return { src: Float64Array.from(src), dst: Float64Array.from(dst) };
+  }
+
   const districts = features.map((f, i) => {
     const p = f.properties;
     const center = hexCenter(p);
@@ -429,6 +515,7 @@
     });
     // Neighbours: kept (on both maps), lost (map only), fresh (hex only).
     const mapN = new Set(p.map_neighbors || []), hexN = new Set(p.hex_neighbors);
+    const forsch = FORSCH_DATA && FORSCH_DATA.districts ? FORSCH_DATA.districts[p.geo_fips] || null : null;
     return {
       id: p.geo_fips,
       properties: p,
@@ -436,6 +523,7 @@
       center,
       corners,
       parts,
+      forsch,
       dist: Math.hypot(center[0] - centroids[i][0], center[1] - centroids[i][1]) / STEP,
       kept: new Set([...mapN].filter((x) => hexN.has(x))),
       lost: new Set([...mapN].filter((x) => !hexN.has(x))),
@@ -443,25 +531,73 @@
     };
   });
 
+  const FORSCH_INTRO = 0.12;
+  let forschReady = 0;
+  for (const d of districts) {
+    if (!d.forsch || !Array.isArray(d.forsch.states) || !d.forsch.states.length) continue;
+    const f = d.forsch, first = f.states[0], scale = 1 / (f.sourceScale || 1), center = f.sourceCenter || d.centroid;
+    const schematic = new Float64Array(first.length);
+    for (let i = 0; i < first.length; i += 2) {
+      schematic[i] = center[0] + (first[i] - center[0]) * scale;
+      schematic[i + 1] = center[1] + (first[i + 1] - center[1]) * scale;
+    }
+    d.forschIntro = pairRingsByArc(d.parts[0].src, schematic);
+    forschReady++;
+  }
+
   const round2 = (v) => Math.round(v * 100) / 100;
-  function pathAt(parts, t) {
+  let bufX = new Float64Array(4096), bufY = new Float64Array(4096);
+  function ensureBuffers(m) {
+    if (bufX.length < m) { bufX = new Float64Array(m * 2); bufY = new Float64Array(m * 2); }
+  }
+  function sampleLinearPart(part, tt) {
+    const m = part.src.length / 2;
+    ensureBuffers(m);
+    const { src, dst } = part;
+    for (let i = 0, k = 0; i < m; i++, k += 2) {
+      bufX[i] = src[k] + (dst[k] - src[k]) * tt;
+      bufY[i] = src[k + 1] + (dst[k + 1] - src[k + 1]) * tt;
+    }
+    return m;
+  }
+  function sampleForschMain(d, tt) {
+    const f = d.forsch;
+    if (!f || !d.forschIntro) return sampleLinearPart(d.parts[0], tt);
+    if (tt <= FORSCH_INTRO) return sampleLinearPart(d.forschIntro, tt / FORSCH_INTRO);
+    const u = (tt - FORSCH_INTRO) / (1 - FORSCH_INTRO), times = f.keyTimes, states = f.states;
+    let k = 0;
+    while (k < times.length - 2 && u > times[k + 1]) k++;
+    const span = times[k + 1] - times[k], local = span > 0 ? Math.max(0, Math.min(1, (u - times[k]) / span)) : 0;
+    const a = states[k], b = states[k + 1], m = a.length / 2;
+    ensureBuffers(m);
+    const sourceScale = f.sourceScale || 1, similarity = (1 - u) / sourceScale + u;
+    const center = f.sourceCenter || d.centroid, slide = f.slide || [f.targetCenter[0] - f.placedCenter[0], f.targetCenter[1] - f.placedCenter[1]];
+    for (let i = 0, q = 0; i < m; i++, q += 2) {
+      const x = a[q] + (b[q] - a[q]) * local, y = a[q + 1] + (b[q + 1] - a[q + 1]) * local;
+      bufX[i] = center[0] + (x - center[0]) * similarity + slide[0] * u;
+      bufY[i] = center[1] + (y - center[1]) * similarity + slide[1] * u;
+    }
+    return m;
+  }
+  function sampleDistrictPart(d, partIndex, tt, mode) {
+    return mode === "forsch" && partIndex === 0 && d.forsch ? sampleForschMain(d, tt) : sampleLinearPart(d.parts[partIndex], tt);
+  }
+  function pathAtDistrict(district, t, mode) {
     let d = "";
-    for (const { src, dst } of parts) {
-      for (let i = 0; i < src.length; i += 2) {
-        const x = src[i] + (dst[i] - src[i]) * t;
-        const y = src[i + 1] + (dst[i + 1] - src[i + 1]) * t;
-        d += (i ? "L" : "M") + round2(x) + "," + round2(y);
+    for (let p = 0; p < district.parts.length; p++) {
+      const m = sampleDistrictPart(district, p, t, mode);
+      for (let i = 0; i < m; i++) {
+        d += (i ? "L" : "M") + round2(bufX[i]) + "," + round2(bufY[i]);
       }
       d += "Z";
     }
     return d;
   }
-  function traceCanvas(ctx, parts, t) {
-    for (const { src, dst } of parts) {
-      for (let i = 0; i < src.length; i += 2) {
-        const x = src[i] + (dst[i] - src[i]) * t;
-        const y = src[i + 1] + (dst[i + 1] - src[i + 1]) * t;
-        if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+  function traceCanvas(ctx, district, t, mode) {
+    for (let p = 0; p < district.parts.length; p++) {
+      const m = sampleDistrictPart(district, p, t, mode);
+      for (let i = 0; i < m; i++) {
+        if (i) ctx.lineTo(bufX[i], bufY[i]); else ctx.moveTo(bufX[i], bufY[i]);
       }
       ctx.closePath();
     }
@@ -471,14 +607,14 @@
   // covers ("lighter" blending), so a pixel under two districts reads 200. A
   // shared border's anti-aliased edge pixels add up to about 100, not 200, so
   // borders don't count as overlap. Covered = alpha at least half.
-  function rasterize(ctx, w, h, m, t) {
+  function rasterize(ctx, w, h, m, t, mode) {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalCompositeOperation = "source-over";
     ctx.clearRect(0, 0, w, h);
     ctx.globalCompositeOperation = "lighter";
     ctx.fillStyle = "rgb(100, 0, 0)";
     ctx.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
-    for (const d of districts) { ctx.beginPath(); traceCanvas(ctx, d.parts, t); ctx.fill(); }
+    for (const d of districts) { ctx.beginPath(); traceCanvas(ctx, d, t, mode); ctx.fill(); }
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalCompositeOperation = "source-over";
     return ctx.getImageData(0, 0, w, h).data;
@@ -568,6 +704,7 @@
   let showOverlaps = false;
   let zoomTransform = d3.zoomIdentity;
   let t = 0;
+  let currentMode = "linear";
 
   function drawOverlaps() {
     if (!showOverlaps) { overlapCanvas.hidden = true; return; }
@@ -580,7 +717,7 @@
       overlapCanvas.style.height = H + "px";
     }
     const k0 = W / view[2], k = zoomTransform.k * k0;
-    const px = rasterize(wctx, W, H, [k, 0, 0, k, (zoomTransform.x - view[0]) * k0, (zoomTransform.y - view[1]) * k0], t);
+    const px = rasterize(wctx, W, H, [k, 0, 0, k, (zoomTransform.x - view[0]) * k0, (zoomTransform.y - view[1]) * k0], t, currentMode);
     const out = octx.createImageData(W, H);
     const o = out.data;
     const c = d3.rgb(cssVar("--overlap"));
@@ -598,11 +735,38 @@
   const tVal = document.getElementById("t-val");
   const btnMap = document.getElementById("btn-map");
   const btnHex = document.getElementById("btn-hex");
+  const btnLinear = document.getElementById("btn-linear");
+  const btnForsch = document.getElementById("btn-forsch");
   const playBtn = document.getElementById("play");
+  const methodNote = document.getElementById("method-note");
+
+  if (!FORSCH_DATA || !forschReady) {
+    btnForsch.disabled = true;
+    btnForsch.title = "forsch_map_data.js is missing or contains no successful districts";
+  }
+
+  function updateMethodUI() {
+    btnLinear.setAttribute("aria-pressed", String(currentMode === "linear"));
+    btnForsch.setAttribute("aria-pressed", String(currentMode === "forsch"));
+    document.getElementById("score-method").textContent = currentMode === "linear" ? "Linear" : "Forsch hybrid";
+    if (currentMode === "linear") {
+      methodNote.textContent = "Linear baseline: every outline point follows one straight path to its paired hex point. All districts use the same linear wall-clock time for a fair method comparison.";
+    } else {
+      const failed = districts.length - forschReady;
+      methodNote.textContent = `Forsch hybrid: ${forschReady} of ${districts.length} main outlines replay MorphApp keyframes; ${failed} fall back to linear. ` +
+        `The first ${Math.round(FORSCH_INTRO * 100)}% transitions from the original Census outline to its schematic source, and a positive similarity transform restores source scale and moves the inner hex to its grid cell. ` +
+        "Extra island rings remain linear. This preserves common endpoints for comparison but is not the paper's strict self-contained or constant-velocity construction.";
+    }
+  }
+
+  function setMode(mode) {
+    if (mode === "forsch" && btnForsch.disabled) return;
+    stop(); currentMode = mode; updateMethodUI(); render(t); activateScores(mode);
+  }
 
   function render(next) {
     t = Math.max(0, Math.min(1, next));
-    districtPaths.attr("d", (d) => pathAt(d.parts, t));
+    districtPaths.attr("d", (d) => pathAtDistrict(d, t, currentMode));
     slider.value = t;
     tVal.textContent = t.toFixed(2);
     btnMap.setAttribute("aria-pressed", String(t === 0));
@@ -623,13 +787,15 @@
     playBtn.textContent = "Stop";
     timer = d3.timer((elapsed) => {
       const k = Math.min(1, elapsed / duration);
-      render(from + (to - from) * d3.easeCubicInOut(k));
+      render(from + (to - from) * k);
       if (k === 1) stop();
     });
   }
 
   btnMap.addEventListener("click", () => { stop(); render(0); });
   btnHex.addEventListener("click", () => { stop(); render(1); });
+  btnLinear.addEventListener("click", () => setMode("linear"));
+  btnForsch.addEventListener("click", () => setMode("forsch"));
   playBtn.addEventListener("click", play);
   slider.addEventListener("input", () => { stop(); render(+slider.value); });
   document.getElementById("overlay").addEventListener("change", (e) => {
@@ -711,32 +877,22 @@
   // ---------------------------------------------------------------------------
   // 8. Scores per frame.
   //    Overlap: share of the covered area that sits under two or more districts.
-  //    Self-crossing: districts whose main outline crosses itself.
+  //    Self-crossing: districts with a proper crossing in any component.
   //    Area change: mean over districts of |dA/dt| divided by the district's
   //    average size, (A(0) + A(1)) / 2.
   // ---------------------------------------------------------------------------
-  const FRAMES = 51;
+  const FRAMES = 101;
   const METRICS = [
-    { key: "overlap", title: "Overlap", desc: "Covered area under two or more districts",
+    { key: "overlap", title: "Overlap", desc: "Raster estimate: covered area under two or more districts",
       fmt: (v) => v.toFixed(1) + "%", tick: (v) => v + "%" },
-    { key: "crossing", title: "Self-crossing outlines", desc: "Districts whose outline crosses itself",
+    { key: "crossing", title: "Self-crossing outlines", desc: "Districts with a sampled proper crossing in any component",
       fmt: (v) => Math.round(v) + (Math.round(v) === 1 ? " district" : " districts"), tick: d3.format("d") },
-    { key: "area", title: "Area change", desc: "Mean |dA/dt| relative to each district's size",
+    { key: "area", title: "Area change", desc: "Mean normalised |dA/dt|, estimated by finite differences",
       fmt: (v) => v.toFixed(2), tick: d3.format(".1f") },
   ];
   let scores = null;
-
-  let bufX = new Float64Array(4096), bufY = new Float64Array(4096);
-  function interpolate(part, tt) {
-    const m = part.src.length / 2;
-    if (bufX.length < m) { bufX = new Float64Array(m * 2); bufY = new Float64Array(m * 2); }
-    const { src, dst } = part;
-    for (let i = 0, k = 0; i < m; i++, k += 2) {
-      bufX[i] = src[k] + (dst[k] - src[k]) * tt;
-      bufY[i] = src[k + 1] + (dst[k + 1] - src[k + 1]) * tt;
-    }
-    return m;
-  }
+  const scoresByMode = { linear: null, forsch: null };
+  let scoreGeneration = 0;
   function shoelace(m) {
     let a = 0;
     for (let i = 0, j = m - 1; i < m; j = i++) a += bufX[j] * bufY[i] - bufX[i] * bufY[j];
@@ -792,8 +948,8 @@
   const sctx = scoreCanvas.getContext("2d", { willReadFrequently: true });
   const sk = SW / view[2];
   const scoreMatrix = [sk, 0, 0, sk, -view[0] * sk, -view[1] * sk];
-  function overlapShare(tt) {
-    const px = rasterize(sctx, SW, SH, scoreMatrix, tt);
+  function overlapShare(tt, mode) {
+    const px = rasterize(sctx, SW, SH, scoreMatrix, tt, mode);
     let covered = 0, over = 0;
     for (let i = 0; i < px.length; i += 4) {
       if (px[i + 3] >= 128) { covered++; if (px[i] > 150) over++; }
@@ -802,27 +958,29 @@
   }
 
   const scoresStatus = document.getElementById("scores-status");
-  function computeScores(done) {
+  function computeScores(mode, generation, done) {
     const areas = districts.map(() => new Float64Array(FRAMES));
     const rows = [];
     let j = 0;
     (function step() {
+      if (generation !== scoreGeneration) return;
       const end = Math.min(FRAMES, j + 4);
       for (; j < end; j++) {
         const tt = j / (FRAMES - 1);
         let crossing = 0;
         districts.forEach((d, i) => {
-          let a = 0;
+          let a = 0, hasCrossing = false;
           d.parts.forEach((part, p) => {
-            const m = interpolate(part, tt);
+            const m = sampleDistrictPart(d, p, tt, mode);
             a += Math.abs(shoelace(m));
-            if (p === 0 && crossesItself(m)) crossing++;
+            if (!hasCrossing && crossesItself(m)) hasCrossing = true;
           });
+          if (hasCrossing) crossing++;
           areas[i][j] = a;
         });
-        rows.push({ t: tt, overlap: overlapShare(tt), crossing, area: 0 });
+        rows.push({ t: tt, overlap: overlapShare(tt, mode), crossing, area: 0 });
       }
-      scoresStatus.textContent = `Scoring frames… ${j} of ${FRAMES}`;
+      scoresStatus.textContent = `Scoring ${mode === "linear" ? "Linear" : "Forsch hybrid"}… ${j} of ${FRAMES}`;
       if (j < FRAMES) { setTimeout(step, 0); return; }
       const h = 1 / (FRAMES - 1);
       for (let k = 0; k < FRAMES; k++) {
@@ -851,6 +1009,7 @@
   });
   const valueAt = (key, tt) => {
     const f = tt * (FRAMES - 1), i = Math.min(FRAMES - 2, Math.floor(f)), r = f - i;
+    if (key === "crossing") return scores[Math.min(FRAMES - 1, Math.round(f))][key];
     return scores[i][key] * (1 - r) + scores[i + 1][key] * r;
   };
   let hoverT = null;
@@ -872,7 +1031,9 @@
       const width = Math.max(200, Math.round(c.svg.clientWidth)), height = 112;
       const margin = { top: 8, right: 10, bottom: 20, left: 38 };
       const x = d3.scaleLinear([0, 1], [margin.left, width - margin.right]);
-      const y = d3.scaleLinear([0, d3.max(scores, (r) => r[c.m.key]) || 1], [height - margin.bottom, margin.top]).nice(3);
+      let sharedMax = 0;
+      for (const data of Object.values(scoresByMode)) if (data) sharedMax = Math.max(sharedMax, d3.max(data, (r) => r[c.m.key]) || 0);
+      const y = d3.scaleLinear([0, sharedMax || 1], [height - margin.bottom, margin.top]).nice(3);
       const g = d3.select(c.svg).attr("viewBox", [0, 0, width, height]);
       g.selectAll("*").remove();
       g.append("g").attr("class", "grid").selectAll("line").data(y.ticks(3).filter((v) => v > 0)).join("line")
@@ -885,8 +1046,9 @@
       g.append("g").attr("class", "axis").attr("transform", `translate(${margin.left},0)`)
         .call(d3.axisLeft(y).ticks(3).tickSize(0).tickPadding(6).tickFormat(c.m.tick))
         .call((a) => a.select(".domain").remove());
-      g.append("path").attr("class", "line")
-        .attr("d", d3.line().x((r) => x(r.t)).y((r) => y(r[c.m.key]))(scores));
+      const line = d3.line().x((r) => x(r.t)).y((r) => y(r[c.m.key]));
+      if (c.m.key === "crossing") line.curve(d3.curveStepAfter);
+      g.append("path").attr("class", "line").attr("d", line(scores));
       c.hover = g.append("line").attr("class", "hover-line").attr("y1", margin.top).attr("y2", height - margin.bottom);
       c.cursor = g.append("line").attr("class", "cursor").attr("y1", margin.top).attr("y2", height - margin.bottom);
       c.dot = g.append("circle").attr("class", "cursor-dot").attr("r", 4);
@@ -901,6 +1063,27 @@
     }
     updateCursors();
   }
+  function activateScores(mode) {
+    const generation = ++scoreGeneration;
+    scores = scoresByMode[mode];
+    hoverT = null;
+    if (scores) {
+      scoresStatus.textContent = "";
+      csvBtn.disabled = false;
+      drawCharts();
+      return;
+    }
+    csvBtn.disabled = true;
+    for (const c of charts) { d3.select(c.svg).selectAll("*").remove(); c.value.textContent = "—"; c.x = null; }
+    computeScores(mode, generation, (rows) => {
+      scoresByMode[mode] = rows;
+      if (generation !== scoreGeneration || currentMode !== mode) return;
+      scores = rows;
+      scoresStatus.textContent = "";
+      csvBtn.disabled = false;
+      drawCharts();
+    });
+  }
   let chartsQueued = false;
   new ResizeObserver(() => {
     if (chartsQueued) return;
@@ -910,12 +1093,13 @@
 
   const csvBtn = document.getElementById("csv");
   csvBtn.addEventListener("click", () => {
-    const lines = ["t,overlap_pct,self_crossing_districts,area_change_rate"].concat(
-      scores.map((r) => [r.t.toFixed(2), r.overlap.toFixed(3), r.crossing, r.area.toFixed(4)].join(",")));
+    if (!scores) return;
+    const lines = ["method,t,overlap_pct,self_crossing_districts,area_change_rate"].concat(
+      scores.map((r) => [currentMode, r.t.toFixed(2), r.overlap.toFixed(3), r.crossing, r.area.toFixed(4)].join(",")));
     const url = URL.createObjectURL(new Blob([lines.join("\n") + "\n"], { type: "text/csv" }));
     const a = document.createElement("a");
     a.href = url;
-    a.download = "hexmap_scores_linear_baseline.csv";
+    a.download = `hexmap_scores_${currentMode}.csv`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -946,19 +1130,17 @@
     : "Rebuild hexmap_data.js with build_data.mjs to see map neighbours.";
 
   applyColors();
+  updateMethodUI();
   render(0);
-  computeScores((rows) => {
-    scores = rows;
-    scoresStatus.textContent = "";
-    csvBtn.disabled = false;
-    drawCharts();
-  });
+  activateScores("linear");
 
   // Handles for poking at things from the browser console.
   window.hexmap = {
-    projection, districts, render, select,
+    projection, districts, render, select, setMode,
     fit: { s, tx, ty, rmsSteps: rms, hexStep: STEP, hexRadius: R },
+    get mode() { return currentMode; },
     get scores() { return scores; },
+    scoresByMode,
   };
 })();
 </script>

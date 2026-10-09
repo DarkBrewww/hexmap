@@ -15,6 +15,7 @@
     --line: #dce0e6;
     --accent: #2a6fc9;
     --accent-soft: rgba(42, 111, 201, 0.16);
+    --center: #d06b19;
     --warn: #c63a3a;
     --warn-soft: rgba(198, 58, 58, 0.18);
     --font-body: system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -31,6 +32,7 @@
       --line: #2a2f37;
       --accent: #5c9cea;
       --accent-soft: rgba(92, 156, 234, 0.20);
+      --center: #f0a05b;
       --warn: #e26a6a;
       --warn-soft: rgba(226, 106, 106, 0.22);
     }
@@ -45,6 +47,7 @@
     --line: #2a2f37;
     --accent: #5c9cea;
     --accent-soft: rgba(92, 156, 234, 0.20);
+    --center: #f0a05b;
     --warn: #e26a6a;
     --warn-soft: rgba(226, 106, 106, 0.22);
   }
@@ -76,12 +79,35 @@
   .d-paths { fill: none; stroke: var(--fg-3); stroke-opacity: 0.5; stroke-width: 0.8; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
   .d-shape { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.8; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
   .d-shape.d-crossing { fill: var(--warn-soft); stroke: var(--warn); }
+  .d-center-path { fill: none; stroke: var(--center); stroke-width: 1.5; stroke-dasharray: 3 3; stroke-linecap: round; opacity: 0.9; vector-effect: non-scaling-stroke; }
+  .d-center-halo { fill: var(--surface); stroke: var(--center); stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+  .d-center-dot { fill: var(--center); }
   .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--fg-2); }
   .legend span { display: inline-flex; align-items: center; gap: 6px; }
   .legend svg { width: 22px; height: 12px; flex: none; }
   details { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
   summary { cursor: pointer; font-weight: 600; }
   details p { margin: 8px 0 0; color: var(--fg-2); max-width: 100ch; }
+  .area-stage { padding-bottom: 8px; }
+  .area-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; }
+  .area-readout { margin: 0; color: var(--fg-2); font: 13px/1.5 var(--font-mono); font-variant-numeric: tabular-nums; }
+  .area-key { display: inline-flex; flex-wrap: wrap; gap: 6px 16px; margin: 2px 0 0; color: var(--fg-2); font-size: 13px; }
+  .area-key span { display: inline-flex; align-items: center; gap: 6px; }
+  .area-swatch { display: inline-block; width: 22px; height: 0; border-top: 2px solid var(--fg-3); }
+  .area-swatch.forsch { border-color: var(--accent); }
+  .area-chart-scroll { overflow-x: auto; overscroll-behavior-inline: contain; }
+  #area-chart { display: block; width: 100%; min-width: 840px; height: auto; }
+  .area-grid { stroke: var(--line); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  .area-axis { stroke: var(--fg-3); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  .area-label { fill: var(--fg-2); font: 12px var(--font-body); }
+  .area-title { fill: var(--fg-2); font: 12px var(--font-body); }
+  .area-linear, .area-forsch { fill: none; stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+  .area-linear { stroke: var(--fg-3); }
+  .area-forsch { stroke: var(--accent); }
+  .area-cursor { stroke: var(--fg-2); stroke-width: 1; stroke-dasharray: 4 3; opacity: 0.75; vector-effect: non-scaling-stroke; }
+  .area-marker { stroke: var(--surface); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+  .area-marker.linear { fill: var(--fg-3); }
+  .area-marker.forsch { fill: var(--accent); }
   code { font-family: var(--font-mono); font-size: 0.92em; }
   footer { color: var(--fg-3); font-size: 12.5px; }
   @media (max-width: 860px) { .pair { grid-template-columns: 1fr; } }
@@ -98,6 +124,7 @@
     <button id="play" class="primary" type="button">Play</button>
     <label for="t">t <input id="t" type="range" min="0" max="1" step="0.001" value="0"><output id="t-val" for="t">0.00</output></label>
     <label for="paths"><input id="paths" type="checkbox"> Paths</label>
+    <label for="centers"><input id="centers" type="checkbox" checked> Area centroid &amp; trajectory</label>
     <label for="slide"><input id="slide" type="checkbox" checked> Slide to grid position</label>
   </div>
 
@@ -121,14 +148,30 @@
     <span><svg viewBox="0 0 22 12"><line x1="1" y1="6" x2="21" y2="6" class="d-orig"/></svg>district outline</span>
     <span><svg viewBox="0 0 22 12"><line x1="1" y1="6" x2="21" y2="6" class="d-hex"/></svg>target hexagon</span>
     <span><svg viewBox="0 0 22 12"><line x1="1" y1="6" x2="21" y2="6" class="d-paths" style="stroke-opacity:1"/></svg>path of each vertex</span>
+    <span><svg viewBox="0 0 22 12"><line x1="1" y1="6" x2="21" y2="6" class="d-center-path"/><circle cx="11" cy="6" r="2.5" class="d-center-halo"/><circle cx="11" cy="6" r="1.2" class="d-center-dot"/></svg>area centroid and its trajectory</span>
     <span><svg viewBox="0 0 22 12"><rect x="1" y="1" width="20" height="10" rx="2" class="d-shape d-crossing"/></svg>outline crossing itself</span>
   </div>
+
+  <section class="stage area-stage">
+    <div class="area-head">
+      <div>
+        <h2>Enclosed area through the morph</h2>
+        <div class="area-key" aria-hidden="true"><span><i class="area-swatch"></i>Linear</span><span><i class="area-swatch forsch"></i>Forsch</span></div>
+      </div>
+      <p class="area-readout" id="area-readout"></p>
+    </div>
+    <p class="how">Shoelace area as a percentage of each method's area at t = 0. The live readout retains the original px² values. The optional grid-position slide is a translation, so it moves the centroid but does not change this curve.</p>
+    <div class="area-chart-scroll" tabindex="0" aria-label="Scrollable area comparison chart">
+      <svg id="area-chart" role="img" aria-label="Comparison of enclosed polygon area over time for the linear and Forsch morphs"></svg>
+    </div>
+  </section>
 
   <details>
     <summary>How the right side was made</summary>
     <p><b>Schematic outline.</b> The Census outline (133 points) is simplified with Douglas-Peucker (tolerance 0.4), each edge is replaced by at most two segments on allowed directions, and slivers shorter than 0.5 squashed units are folded away: 49 segments. This step is ours; the paper starts from outlines that are already schematic.</p>
     <p><b>Directions.</b> Their code knows only rectilinear and octilinear directions. Before the run, x is squashed by tan 30°, which turns the hexagon's slanted sides into 45° sides; after the run it is stretched back. So the allowed directions here are 0°, 30°, 90° and 150°: the hexagon's three edge directions plus horizontal. "On allowed directions" below each side measures the share of the outline's length that runs in one of them (within 1°).</p>
     <p><b>Hexagon inside, then a slide.</b> Their method morphs between outlines that are nested or overlap, while this district's hexagon sits about 3.3 hex steps away on the grid. The hexagon is therefore placed inside the district where it has the most room, their code morphs onto it, and the slide to the grid position is added on top at constant speed. Their code also needs a cut that joins the two outlines; it runs horizontally from the hexagon's upper-left corner to the district's west edge, as the paper asks for a schematic cut line. Untick "Slide to grid position" to see their morph alone.</p>
+    <p><b>Center and area.</b> The optional center marker is the polygon's shoelace area centroid, so repeated or deletion vertices do not bias it. In the degenerate zero-area case, the marker uses the outline's bounding-box center. Its dashed line samples the full centroid trajectory. The chart uses the same polygon states and time parameter as the animation.</p>
     <p><b>Run.</b> Their <code>MorphApp</code> from tag "publication", run with <code>-S OCTILINEAR -T GEODESIC</code> on Java 11. The algorithm code is unmodified; the GeoTools classes it imports are replaced by 8 small stand-ins (a default JTS geometry factory, a WKT reader, and a shapefile export that is never called). Their correspondence: 3 matches, 3 insertions, 47 deletions, timed in 7 transition cells. Their own checks: self-crossings no, self-contained yes. The page plays their 8 keyframes with straight-line motion in between, exactly as their SVG output does. Checked over 2,001 in-between frames: every edge within 0.17° of an allowed direction, no crossings.</p>
   </details>
 
@@ -182,6 +225,23 @@
     return false;
   }
 
+  // Standard polygon area centroid. The bounding-box center is independent of
+  // repeated vertices and is used only when the area centroid is undefined.
+  function polygonMetrics(xs, ys) {
+    let twiceArea = 0, cx = 0, cy = 0, x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    const m = xs.length;
+    for (let i = 0; i < m; i++) {
+      const j = (i + 1) % m, cross = xs[i] * ys[j] - xs[j] * ys[i];
+      twiceArea += cross;
+      cx += (xs[i] + xs[j]) * cross;
+      cy += (ys[i] + ys[j]) * cross;
+      x0 = Math.min(x0, xs[i]); x1 = Math.max(x1, xs[i]);
+      y0 = Math.min(y0, ys[i]); y1 = Math.max(y1, ys[i]);
+    }
+    if (Math.abs(twiceArea) > 1e-9) return { area: Math.abs(twiceArea) / 2, cx: cx / (3 * twiceArea), cy: cy / (3 * twiceArea) };
+    return { area: 0, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2 };
+  }
+
   // ---- Linear side: precomputed pairs (index.html section 3, best phase) ----
   const L = D.linear, nL = L.src.length / 2;
   function linearAt(t) {
@@ -222,7 +282,11 @@
     const hex = el("polygon", { class: "d-hex" }, svg);
     const paths = el("g", { class: "d-paths" }, svg);
     const shape = el("polygon", { class: "d-shape" }, svg);
-    return { hex, paths, shape };
+    const centerLayer = el("g", { class: "d-center-layer", "aria-hidden": "true" }, svg);
+    const centerPath = el("polyline", { class: "d-center-path" }, centerLayer);
+    const centerHalo = el("circle", { r: 2.8, class: "d-center-halo" }, centerLayer);
+    const centerDot = el("circle", { r: 1.2, class: "d-center-dot" }, centerLayer);
+    return { hex, paths, shape, centerLayer, centerPath, centerHalo, centerDot };
   }
   const VL = makeView($("lin")), VF = makeView($("fm"));
   VL.hex.setAttribute("points", ringPts(D.hex));
@@ -245,24 +309,107 @@
     }
   }
 
-  const tIn = $("t"), tOut = $("t-val"), playBtn = $("play"), pathsIn = $("paths"), slideIn = $("slide");
+  function positionCenter(view, metric) {
+    view.centerHalo.setAttribute("cx", metric.cx); view.centerHalo.setAttribute("cy", metric.cy);
+    view.centerDot.setAttribute("cx", metric.cx); view.centerDot.setAttribute("cy", metric.cy);
+  }
+
+  // Sample the centroid independently of the animation frames so both the
+  // smooth linear curve and all piecewise Forsch segments are visible.
+  function drawCenterPaths() {
+    const show = centersIn.checked;
+    VL.centerLayer.toggleAttribute("hidden", !show);
+    VF.centerLayer.toggleAttribute("hidden", !show);
+    if (!show) return;
+    const lx = [], ly = [], fx = [], fy = [], samples = 240, slide = slideIn.checked;
+    for (let i = 0; i <= samples; i++) {
+      const t = i / samples;
+      const [lxs, lys] = linearAt(t), lm = polygonMetrics(lxs, lys);
+      const [fxs, fys] = forschAt(t, slide), fm = polygonMetrics(fxs, fys);
+      lx.push(lm.cx); ly.push(lm.cy); fx.push(fm.cx); fy.push(fm.cy);
+    }
+    VL.centerPath.setAttribute("points", pts(lx, ly));
+    VF.centerPath.setAttribute("points", pts(fx, fy));
+  }
+
+  const tIn = $("t"), tOut = $("t-val"), playBtn = $("play"), pathsIn = $("paths"), centersIn = $("centers"), slideIn = $("slide");
   const pct = (v) => Math.round(v * 100) + "%";
+  const areaFormat = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
+
+  // ---- Area comparison: sampled from the exact same state functions as the maps ----
+  function niceCeiling(v) {
+    const p = Math.pow(10, Math.floor(Math.log10(v))), f = v / p;
+    return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p;
+  }
+  function makeAreaChart() {
+    const svg = $("area-chart"), W = 960, H = 235, M = { l: 66, r: 22, t: 12, b: 38 }, samples = 400;
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const values = [];
+    const [l0x, l0y] = linearAt(0), [f0x, f0y] = forschAt(0, false);
+    const linearStart = polygonMetrics(l0x, l0y).area, forschStart = polygonMetrics(f0x, f0y).area;
+    let maxPercent = 100;
+    for (let i = 0; i <= samples; i++) {
+      const t = i / samples, [lx, ly] = linearAt(t), [fx, fy] = forschAt(t, false);
+      const la = polygonMetrics(lx, ly).area, fa = polygonMetrics(fx, fy).area;
+      const lp = linearStart ? la / linearStart * 100 : 0, fp = forschStart ? fa / forschStart * 100 : 0;
+      values.push([t, lp, fp]); maxPercent = Math.max(maxPercent, lp, fp);
+    }
+    const yMax = niceCeiling(maxPercent), xAt = (t) => M.l + t * (W - M.l - M.r), yAt = (v) => H - M.b - v / yMax * (H - M.t - M.b);
+    const addText = (text, attrs) => { const e = el("text", attrs, svg); e.textContent = text; return e; };
+    for (let i = 0; i <= 4; i++) {
+      const v = yMax * i / 4, y = yAt(v);
+      el("line", { x1: M.l, y1: y, x2: W - M.r, y2: y, class: "area-grid" }, svg);
+      addText(areaFormat.format(v) + "%", { x: M.l - 9, y: y + 4, "text-anchor": "end", class: "area-label" });
+    }
+    for (let i = 0; i <= 4; i++) {
+      const t = i / 4, x = xAt(t);
+      if (i > 0) el("line", { x1: x, y1: M.t, x2: x, y2: H - M.b, class: "area-grid" }, svg);
+      addText(t.toFixed(2), { x, y: H - M.b + 20, "text-anchor": "middle", class: "area-label" });
+    }
+    el("line", { x1: M.l, y1: M.t, x2: M.l, y2: H - M.b, class: "area-axis" }, svg);
+    el("line", { x1: M.l, y1: H - M.b, x2: W - M.r, y2: H - M.b, class: "area-axis" }, svg);
+    addText("area (% of t = 0)", { transform: `translate(17 ${(M.t + H - M.b) / 2}) rotate(-90)`, "text-anchor": "middle", class: "area-title" });
+    addText("t", { x: W - M.r, y: H - 7, "text-anchor": "end", class: "area-title" });
+    const curve = (index) => values.map((v, i) => `${i ? "L" : "M"}${xAt(v[0]).toFixed(2)},${yAt(v[index]).toFixed(2)}`).join(" ");
+    el("path", { d: curve(1), class: "area-linear" }, svg);
+    el("path", { d: curve(2), class: "area-forsch" }, svg);
+    const cursor = el("line", { y1: M.t, y2: H - M.b, class: "area-cursor" }, svg);
+    const linearMarker = el("circle", { r: 4, class: "area-marker linear" }, svg);
+    const forschMarker = el("circle", { r: 4, class: "area-marker forsch" }, svg);
+    return { xAt, yAt, cursor, linearMarker, forschMarker, linearStart, forschStart };
+  }
+  const areaChart = makeAreaChart();
+
+  function updateAreaChart(t, linearMetric, forschMetric) {
+    const x = areaChart.xAt(t);
+    areaChart.cursor.setAttribute("x1", x); areaChart.cursor.setAttribute("x2", x);
+    const lp = areaChart.linearStart ? linearMetric.area / areaChart.linearStart * 100 : 0;
+    const fp = areaChart.forschStart ? forschMetric.area / areaChart.forschStart * 100 : 0;
+    areaChart.linearMarker.setAttribute("cx", x); areaChart.linearMarker.setAttribute("cy", areaChart.yAt(lp));
+    areaChart.forschMarker.setAttribute("cx", x); areaChart.forschMarker.setAttribute("cy", areaChart.yAt(fp));
+    $("area-readout").textContent = `t ${t.toFixed(3)} · Linear ${areaFormat.format(linearMetric.area)} px² (${lp.toFixed(1)}%) · Forsch ${areaFormat.format(forschMetric.area)} px² (${fp.toFixed(1)}%)`;
+  }
 
   function render() {
     const t = +tIn.value, slide = slideIn.checked;
     tOut.textContent = t.toFixed(2);
     const [lx, ly] = linearAt(t);
+    const lm = polygonMetrics(lx, ly);
     const lCross = crossesItself(lx, ly);
     VL.shape.setAttribute("points", pts(lx, ly));
+    positionCenter(VL, lm);
     VL.shape.classList.toggle("d-crossing", lCross);
     $("lin-stats").innerHTML = `${nL} points. On allowed directions: <b>${pct(onAllowed(lx, ly))}</b>. Crosses itself: ${lCross ? '<span class="bad">yes</span>' : "<b>no</b>"}.`;
 
     const [fx, fy] = forschAt(t, slide);
+    const fm = polygonMetrics(fx, fy);
     const fCross = crossesItself(fx, fy);
     VF.shape.setAttribute("points", pts(fx, fy));
+    positionCenter(VF, fm);
     VF.shape.classList.toggle("d-crossing", fCross);
     VF.hex.setAttribute("points", ringPts(slide ? D.hex : F.placedHex));
     $("fm-stats").innerHTML = `${F.segments} segments to 6. On allowed directions: <b>${pct(onAllowed(fx, fy))}</b>. Crosses itself: ${fCross ? '<span class="bad">yes</span>' : "<b>no</b>"}.`;
+    updateAreaChart(t, lm, fm);
   }
 
   let raf = 0, start = 0;
@@ -283,8 +430,10 @@
   });
   tIn.addEventListener("input", () => { stop(); render(); });
   pathsIn.addEventListener("change", drawPaths);
-  slideIn.addEventListener("change", () => { drawPaths(); render(); });
+  centersIn.addEventListener("change", drawCenterPaths);
+  slideIn.addEventListener("change", () => { drawPaths(); drawCenterPaths(); render(); });
   drawPaths();
+  drawCenterPaths();
   render();
 })();
 </script>
