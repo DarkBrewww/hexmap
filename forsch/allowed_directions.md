@@ -51,7 +51,7 @@ The linear side starts at 27% because the real Census border has some nearly hor
 
 The method of Forsch et al. (2024) adds one rule: an edge may only slide sideways, parallel to itself. It never rotates, so a horizontal edge stays horizontal and a 30° edge stays at 30° for the whole morph. Edges the hexagon doesn't need shrink to zero length and disappear. Each edge also moves at its own constant speed.
 
-There's one precondition. The starting outline must already use only allowed directions. That's why the district is schematized first, from 133 Census points to 24 segments, before their code runs. From then on, every in-between frame is drawn with the same four angles. The page checked 2,001 in-between frames: every edge stays within 0.05° of an allowed direction.
+There's one precondition. The starting outline must already use only allowed directions. That's why the district is schematized first, from 133 Census points to 49 segments, before their code runs. From then on, every in-between frame is drawn with the same four angles. `build_page.cjs` checked 2,001 in-between frames: every edge stays within 0.2° of an allowed direction.
 
 ## What about the direction of motion?
 

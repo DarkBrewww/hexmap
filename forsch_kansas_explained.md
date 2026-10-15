@@ -5,17 +5,18 @@
 - **Left:** our linear baseline.
 - **Right:** the morph computed by the code of Forsch, Kemna, Langetepe and Haunert (2024), "Polyline Morphing for Animated Schematic Maps".
 
-Both sides share one clock and end on the same hexagon at its grid position. The page is a single 29 KB file with its data built in. It needs no internet and no libraries.
+Both sides share one clock and end on the same hexagon at its grid position. The page is a single 47 KB file with its data built in. It needs no internet and no libraries.
 
 ## What's on the page
 
 Play runs the morph over 4 seconds, and the t slider scrubs it by hand: t = 0 is the district, t = 1 is the hexagon. The clock runs at a constant rate with no easing, so the constant speeds of their method show up as constant speeds on screen.
 
-Each panel draws three things:
+Each panel draws four things:
 
 - **Gray outline:** the Census border of the district, left in place as a reference.
 - **Dashed hexagon:** where the morph ends.
 - **Blue shape:** the outline at the current t. It turns red if the outline crosses itself.
+- **Orange dot and dashed line:** the shape's area centroid and the path it follows over the whole morph. "Area centroid & trajectory", on by default, shows or hides them.
 
 **Paths** draws the route of every vertex over the whole morph. On the left these are straight lines. On the right they're bent lines through the keyframes described below.
 
@@ -25,6 +26,8 @@ Under each panel are two numbers that update with t:
 
 - **On allowed directions:** the share of the outline's length whose edges point at 0°, 30°, 90° or 150°, within 1°. Those are the hexagon's three edge angles plus horizontal. `forsch/allowed_directions.md` covers this number in detail.
 - **Crosses itself:** the same test as index.html. Two edges that properly cross count. Edges that only touch don't.
+
+Below the panels, "Enclosed area through the morph" plots each side's area as a percentage of that side's own area at t = 0, with a cursor at the current t. The readout beside the heading gives both areas in px². The slide moves the shape without changing its area, so the chart looks the same with it on or off.
 
 "How the right side was made" at the bottom opens a short version of this document. The footer cites the paper, their code and our data sources.
 
@@ -46,7 +49,7 @@ There are five steps, each a file in `forsch/`.
 
 ### 1. The same outline
 
-`input/kansas_1st_screen.json` holds the district's outline and its hexagon exactly as index.html draws them: the Census shape projected with d3.geoAlbersUsa, and the hex grid fitted onto the map. Both sides of the page start from this file.
+`input/kansas_1st_screen.json` holds the district's outline and its hexagon exactly as index.html draws them: the Census shape projected with d3.geoAlbersUsa, and the hex grid fitted onto the map. Both sides of the page start from this file. `npm run extract`, run from the repo root, writes it by opening index.html in headless Chromium and reading the numbers from the page.
 
 ### 2. Squash and simplify (`prep_input.cjs`)
 
@@ -63,23 +66,23 @@ A 30° side climbs 1 for every √3 across. After squashing it climbs 1 for ever
 
 In the squashed space the Census outline is then made schematic:
 
-1. Douglas-Peucker with tolerance 2 cuts the 133 points to 18.
+1. Douglas-Peucker with tolerance 0.4 cuts the 133 points to 40.
 2. Each remaining edge is replaced by at most two segments at the allowed angles either side of it. That makes a small staircase with its corner on the outside.
-3. Pieces shorter than 2 units are folded away by extending their neighbours until they meet, and collinear runs are merged.
+3. Pieces shorter than 0.5 units are folded away by extending their neighbours until they meet, and collinear runs are merged.
 
-That leaves 24 segments: 7 horizontal, 8 vertical, 3 at 30° and 6 at 150°. The paper starts from outlines that are already schematic, so this step is ours.
+That leaves 49 segments: 15 horizontal, 18 vertical, 5 at 30° and 11 at 150°. The paper starts from outlines that are already schematic, so this step is ours.
 
-It costs some detail. The jagged county-line staircase in the east becomes a few diagonals. The schematic shape's area is 3,962 px², against 3,640 px² for the Census shape.
+It costs a little detail. The curved north border becomes horizontal runs with small steps, and the slightly slanted west border becomes vertical. The schematic outline is 0.2 px from the Census border at the median and 3.1 px at worst, at the north end of the west border. Its area is 3,820 px², against 3,640 px² for the Census shape. An earlier run with 24 segments fit worse: 0.7 px at the median and 5.0 px at worst.
 
 ### 3. Place the hexagon and pick the cut (`prep_input.cjs`)
 
-Their method morphs between outlines that are nested (one inside the other) or that overlap, because it moves vertices through the region between the two. Kansas's 1st and its hexagon don't touch. The hexagon sits about 3.3 hex steps (80 px) to the northwest, because the hex layout packs districts differently from the map.
+Their method morphs between outlines that are nested (one inside the other) or that overlap, because it moves vertices through the region between the two. Kansas's 1st and its hexagon don't touch. The hexagon's centre sits about 4.1 hex steps (98 px) northwest of the district's centroid, and its nearest point is 45 px outside the district, because the hex layout packs districts differently from the map.
 
 So the morph happens in two layers:
 
 1. **Place the hexagon.** It goes inside the district where it has the most room. A grid search over candidate centres keeps the one with the largest gap to the outline, 8.9 px, in the wide western part.
 2. **Morph onto it.** Their code morphs the outline onto that placed hexagon.
-3. **Slide on top.** The page shifts every point by t × (−73.5, −33.1) px, which carries the placed hexagon to its grid position exactly at t = 1.
+3. **Slide on top.** The page shifts every point by t × (−73.5, −33.1) px, which carries the placed hexagon to its grid position exactly at t = 1. That is 3.3 hex steps (81 px) in all.
 
 Moving a whole shape doesn't change its edge angles or create crossings, so the slide keeps both properties. On screen, though, each vertex's speed is their speed plus the slide's. Untick "Slide to grid position" to see their morph alone, ending on the placed hexagon.
 
@@ -88,11 +91,11 @@ Closed outlines need one more step, the cut:
 - **Why a cut.** Their code works on lines with a start and an end. So each ring is cut open at one point, and the two cut points are joined by a straight "cut line". The first and last vertex of the outline travel along it.
 - **What the paper does.** It cuts at the closest pair of vertices and asks for a cut line that is itself schematic. Here a straight line between the closest vertices would have been slanted.
 - **What we did instead.** From each hexagon corner, a ray goes out in each of the 8 allowed directions, and the shortest ray that reaches the outline is used. It runs horizontally for 8.9 px from the hexagon's upper-left corner to the district's west border.
-- **The new vertex.** The point where the ray lands becomes a new vertex of the outline. It sits on an existing edge, so the shape doesn't change. Both rings start there.
+- **The new vertex.** The point where the ray lands becomes a new vertex of the outline. It sits on the west border, so the shape doesn't change, but that border is now two edges: 10 px above the cut and 41 px below it. That's why `prep_input.cjs` prints 50 segments, not 49. Both rings start there.
 
 This step writes three files:
 
-- `input/source.wkt`: the outline, 25 vertices.
+- `input/source.wkt`: the outline, 50 vertices.
 - `input/target.wkt`: the hexagon.
 - `input/transform.json`: everything needed to undo the squash and add the slide later.
 
@@ -123,20 +126,20 @@ Inside, it works in four stages, matching the paper.
 - **Delete:** shrinks an outline segment to a point.
 - **Insert:** grows a hexagon segment out of a point.
 
-The program picks the sequence with the lowest cost, which is the distance vertices travel along their traces, weighted by segment length. For Kansas's 1st it found 3 matches, 3 inserts and 22 deletes:
+The program picks the sequence with the lowest cost, which is the distance vertices travel along their traces, weighted by segment length. For Kansas's 1st it found 3 matches, 3 inserts and 47 deletes:
 
 | Hexagon side | Comes from |
 |---|---|
-| West (vertical) | the district's west border, shrinking from 41 px to 13 px |
-| East (vertical) | an 11 px vertical edge in the district's eastern part |
+| West (vertical) | the district's west border below the cut, shrinking from 41 px to 13 px |
 | Upper-left (30°) | the short 30° edge at the district's northwest corner |
-| Upper-right, lower-left, lower-right | grown from single points |
+| Upper-right (150°) | a 4 px step in the north border |
+| East, lower-left, lower-right | grown from single points |
 
-Every other outline segment shrinks away, including all 7 horizontal ones, since a pointy-top hexagon has no horizontal sides.
+Every other outline segment shrinks away, including all 15 horizontal ones, since a pointy-top hexagon has no horizontal sides.
 
 **Timing.** The paper requires every segment to move parallel to itself at its own constant speed. A segment may start late and stop early, but while it moves its speed doesn't change. To arrange that, the code does two things:
 
-1. It splits the region into transition cells, areas where the segments inside start and stop together. There are 6 here.
+1. It splits the region into transition cells, areas where the segments inside start and stop together. There are 7 here.
 2. It solves a small linear system for when each cell starts and ends.
 
 The output is the outline's shape ("keyframe") at each moment something starts or stops. Between two keyframes every vertex moves in a straight line at constant speed.
@@ -159,14 +162,14 @@ Then it checks three things:
 
 - the first keyframe passes through every vertex of the schematic outline;
 - the last keyframe passes through every hexagon corner;
-- every edge in every keyframe is octilinear. The worst case is off by 0.00002°.
+- every edge in every keyframe is octilinear. The worst case is off by 0.00005°.
 
-The result is `out/forsch_frames.json`: 7 keyframes of 57 points each, in screen coordinates.
+The result is `out/forsch_frames.json`: 8 keyframes of 107 points each, in screen coordinates.
 
 `build_page.cjs` does four things in turn:
 
 1. computes the linear pairs;
-2. drops the repeated closing point of each keyframe, leaving 56 points;
+2. drops the repeated closing point of each keyframe, leaving 106 points;
 3. checks 2,001 frames between keyframes for angles and crossings;
 4. fills `page_template.html` with all of it to write `forsch_kansas.html`.
 
@@ -175,7 +178,7 @@ The result is `out/forsch_frames.json`: 7 keyframes of 57 points each, in screen
 Both sides use straight-line motion between keyframes. The difference is how many keyframes each has:
 
 - **Left:** two, at t = 0 and t = 1, so every point makes one straight move.
-- **Right:** seven, at t = 0, 0.100, 0.335, 0.430, 0.576, 0.701 and 1. Every vertex makes up to six straight moves, and in each one the segments slide parallel to themselves.
+- **Right:** eight, at t = 0, 0.030, 0.085, 0.096, 0.132, 0.269, 0.531 and 1. Every vertex makes up to seven straight moves, and in each one the segments slide parallel to themselves.
 
 ```js
 let i = 0;
@@ -186,41 +189,42 @@ x = A[j].x + (B[j].x - A[j].x) * u + (slide ? SLIDE.x * t : 0);
 
 Different parts of the outline move at different times:
 
-| Leg | Points moving (of 56) |
+| Leg | Points moving (of 106) |
 |---|---|
-| 1 | 20 |
-| 2 | 26 |
-| 3 | 30 |
-| 4 | 40 |
-| 5 | 32 |
-| 6 | 48 |
+| 1 | 30 |
+| 2 | 36 |
+| 3 | 44 |
+| 4 | 48 |
+| 5 | 58 |
+| 6 | 84 |
+| 7 | 106 |
 
-That's their timing at work. On the left, everything moves all the time.
+That's their timing at work. Points along the east and north borders start first, and only in the last leg is every point moving. On the left, everything moves all the time.
 
 ## What the numbers show
 
 | t | Allowed directions, linear | Allowed directions, Forsch | Area, linear (px²) | Area, Forsch (px²) |
 |---|---|---|---|---|
-| 0 | 27% | 100% | 3,640 | 3,962 |
-| 0.25 | 23% | 100% | 2,569 | 3,313 |
-| 0.5 | 5% | 100% | 1,682 | 2,619 |
-| 0.75 | 5% | 100% | 980 | 1,696 |
+| 0 | 27% | 100% | 3,640 | 3,820 |
+| 0.25 | 23% | 100% | 2,569 | 3,281 |
+| 0.5 | 5% | 100% | 1,682 | 2,513 |
+| 0.75 | 5% | 100% | 980 | 1,304 |
 | 1 | 100% | 100% | 462 | 462 |
 
-The Forsch side stays schematic at every moment. Across 2,001 checked frames every edge stays within 0.05° of an allowed angle, and the outline never crosses itself. The linear side doesn't cross itself for this district either, but nothing prevents it. In the full-map scores, up to 36 districts cross themselves at t = 0.62.
+The Forsch side stays schematic at every moment. Across 2,001 checked frames every edge stays within 0.2° of an allowed angle, and the outline never crosses itself. The linear side does cross itself, but only for a moment: two pairs of edges under 2 px long cross between t = 0.8085 and 0.8111, which 2 of 2,001 evenly spaced frames catch. At Play speed that window lasts about 10 ms, so the red outline rarely shows on screen. Nothing in the linear method prevents crossings, and in the full-map scores up to 36 districts cross themselves at t = 0.62.
 
 On Klaus's suggested metric, rate of change of area, Forsch does worse here. It loses area in bursts as groups of segments start and stop:
 
 | | Peak rate of area change (px² per unit of t) | Relative to starting area |
 |---|---|---|
 | Linear | 4,651 | 1.3× |
-| Forsch | 7,703 | 1.9× |
+| Forsch | 6,006 | 1.6× |
 
 It guarantees the shape and no crossings, and pays for that with less even area change. That trade-off is worth showing alongside the rest.
 
 ## Things to know
 
-**The schematization is ours.** Step 2 isn't part of their method, and different settings give different outlines. `node prep_input.cjs 2 2` takes the Douglas-Peucker tolerance and the shortest segment as its two numbers.
+**The schematization is ours.** Step 2 isn't part of their method, and different settings give different outlines. `node prep_input.cjs 0.4 0.5` takes the Douglas-Peucker tolerance and the shortest segment as its two numbers.
 
 **Only four directions.** The outline uses four of the hex grid's six directions, because we ran their octilinear mode on squashed coordinates. Supporting all six would mean changing their code, which this demo avoids.
 
@@ -235,7 +239,7 @@ It guarantees the shape and no crossings, and pays for that with less even area 
 | File | What it is |
 |---|---|
 | `forsch_kansas.html` | the page |
-| `forsch/input/kansas_1st_screen.json` | the district and its hexagon in index.html's screen coordinates |
+| `forsch/input/kansas_1st_screen.json` | the district and its hexagon in index.html's screen coordinates, written by `npm run extract` |
 | `forsch/prep_input.cjs` | squash, schematize, place the hexagon, pick the cut; writes the next two rows |
 | `forsch/input/source.wkt`, `target.wkt` | the outline and the hexagon, as their code reads them |
 | `forsch/input/transform.json` | the squash factor, the centroid and the placed hexagon, to undo it all later |

@@ -57,6 +57,8 @@ To rebuild `hexmap_data.js` from `cb_2024_us_cd119_20m.zip` and `cdhd_hex_119.ge
 
 `district_morph.html` shows one district at a time: its outline, its hexagon and the straight path of every point, with Play, a t slider and a phase slider. It runs the same pairing code as `index.html`, works offline, and lists all 436 districts plus four examples (Kansas's 1st, Texas's 4th, Louisiana's 3rd, Michigan's 1st).
 
+`district_morph.html` and `forsch/input/kansas_1st_screen.json` keep their own copy of the screen geometry that `index.html` computes: each district's outline after `d3.geoAlbersUsa` and its hexagon after the fit. `npm run extract` rewrites both from `index.html` itself. It opens the page in headless Chromium, records the outlines the same way the page does, and writes them into the data block of `district_morph.html` (3 decimals) and into the Kansas file (full precision). It serves the d3 version the page pins from `node_modules`, so it runs offline. Before the first run, install the browser with `npx playwright install chromium`.
+
 ## Forsch et al. on one district
 
 `forsch_kansas.html` plays Kansas's 1st two ways, side by side: the linear baseline on the left, and on the right the morph computed by the code of Forsch, Kemna, Langetepe and Haunert (2024), "Polyline Morphing for Animated Schematic Maps". Their method keeps every in-between outline schematic and free of self-crossings. Under each side the page shows how much of the outline runs in an allowed direction and whether it crosses itself. It works offline.

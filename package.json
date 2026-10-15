@@ -3,11 +3,16 @@
   "private": true,
   "description": "Morph between the 119th Congress district map and the CDHD hex layout (CSE 523/524, Prof. Klaus Mueller)",
   "scripts": {
-    "build": "node build_data.mjs"
+    "build": "node build_data.mjs",
+    "extract": "node extract_screen_geometry.cjs"
   },
   "dependencies": {
     "adm-zip": "^0.6.1",
     "d3-geo": "^3.1.1",
     "shapefile": "^0.6.6"
+  },
+  "devDependencies": {
+    "d3": "7.9.0",
+    "playwright": "1.56.1"
   }
 }
