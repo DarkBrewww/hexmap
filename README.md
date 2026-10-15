@@ -49,7 +49,7 @@ The dashboard uses 119th Congress lines. About ten states redrew their maps for 
 
 `index.html` draws the 436 districts with d3 and morphs them into the hex layout. Open it in a browser. It loads d3 from cdnjs, so it needs internet, and `hexmap_data.js` has to sit next to it.
 
-The page runs the linear baseline: Map and Hexes buttons, a t slider and Play. The Overlaps checkbox paints every spot covered by two or more districts. The panel on the right scores 51 frames on overlap, self-crossing outlines and area change, and the scores download as CSV. Clicking a district shows its neighbours on both maps, on the map only and on the hex grid only. In the browser console, `window.hexmap` exposes the districts, the fit, `render(t)`, `select(d)` and the scores.
+The page offers Linear and Forsch hybrid modes, with Map and Hexes buttons, a t slider and Play. The Overlaps checkbox paints every spot covered by two or more districts. The panel on the right scores 101 samples on overlap, self-crossing outlines and area change, and the scores download as CSV. These are diagnostic time samples, not the animation's frame rate or a continuous-time proof. Clicking a district shows its neighbours on both maps, on the map only and on the hex grid only. In the browser console, `window.hexmap` exposes the districts, the fit, `render(t)`, `select(d)` and the scores. Forsch mode also reads `forsch_map_data.js` next to the page.
 
 To rebuild `hexmap_data.js` from `cb_2024_us_cd119_20m.zip` and `cdhd_hex_119.geojson`, run `npm install` and then `npm run build`. The build checks that all 436 districts join, rounds coordinates to 5 decimals, adds each district's neighbours on the Census map (`map_neighbors`), and stops if any outline crosses itself.
 
@@ -77,3 +77,70 @@ node build_page.cjs
 ```
 
 `shims/` stands in for the GeoTools classes their code imports, so GeoTools isn't needed. `out/` holds what their program wrote: `morph.svg` is their own animation of the run (it's in the squashed space, so the hexagon looks narrow), `stats.csv` their checks, and the `.ipe` files open in the Ipe editor. `parse_morph_svg.cjs` turns `morph.svg` back into keyframes in screen coordinates and `build_page.cjs` writes the page. Their code and the jars stay out of the repo (`forsch/src/` and `forsch/lib/` are in `.gitignore`) because their repository doesn't state a licence.
+
+## Rebuilding the full-map Forsch data
+
+`forsch/build_full_map.cjs` is the offline generator for `forsch_map_data.js`.
+It reads the screen geometry embedded in `district_morph.html`, prepares each
+main outline, invokes the authors' Java `MorphApp`, and collects its keyframes.
+It does not build the Kansas page or change `index.html`.
+
+Use Node.js 18 or newer (tested here with Node 24) and a JDK 11 or newer (tested
+with JDK 11). Download and compile the Java code as above first. On Windows,
+these equivalent PowerShell commands run from the repository root:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\forsch\get_forsch.ps1
+New-Item -ItemType Directory -Force forsch\build\classes | Out-Null
+$javaSources = Get-ChildItem forsch\src,forsch\shims -Recurse -Filter *.java | Where-Object Name -ne 'module-info.java'
+javac --release 11 -d forsch\build\classes -cp "forsch/lib/*" $javaSources.FullName
+```
+
+Make `java` and `javac` available on PATH, or set `JAVA_HOME`. The full-map
+generator also accepts `--java=C:/path/to/jdk/bin/java.exe`. No Java installation
+is needed just to view the committed animations.
+
+If source geometry, projection, or hex placement changes, run `npm run build`
+(for changed raw inputs) and then `npm run extract` before rebuilding the
+keyframes. Extraction requires `npm install` and, once,
+`npx playwright install chromium`. Viewing existing pages needs none of these
+build steps.
+
+Run these from the repository root:
+
+```powershell
+# Small test; writes only forsch/fullmap_work/forsch_map_data.limit-5.js.
+npm run forsch:build -- --limit=5 --jobs=2
+
+# Build a full candidate without replacing the viewer's current data.
+npm run forsch:build -- --jobs=4 --output=forsch/fullmap_work/candidate.js
+if ($LASTEXITCODE -ne 0) { throw "Forsch generation failed; current viewer data was not replaced." }
+npm run forsch:validate -- --input=forsch/fullmap_work/candidate.js
+# Only publish locally after the validator succeeds (PowerShell).
+if ($LASTEXITCODE -eq 0) { Copy-Item -LiteralPath forsch/fullmap_work/candidate.js -Destination forsch_map_data.js }
+
+# Validate the committed/current viewer data, without changing it.
+npm run forsch:validate
+```
+
+The generator's original direct command, `node forsch/build_full_map.cjs
+--jobs=4`, writes `forsch_map_data.js` immediately, even if some districts fail.
+Use the candidate-and-validation sequence above to retain complete data until
+the new run passes. Limited runs are intentionally rejected by the full-coverage
+validator. `--jobs` controls parallel Java processes; `--retry` recomputes all
+selected districts instead of using cached successes or failures. First runs
+can take tens of minutes; matching cached runs are much faster.
+
+Per-district WKT inputs, Java outputs, logs embedded in failure records, and
+cached results live under `forsch/fullmap_work/`. The cache fingerprint includes
+the generator, compiled classes, jars, and district input. These intermediates
+are ignored by Git; upload the scripts, not that directory. The validator checks
+full coverage, finite coordinates, keyframe structure/times, and final hex
+endpoints. It does not prove absence of overlap or self-crossing at every time.
+
+This remains a hybrid: schematization, temporary source enlargement, an opening
+transition, and the slide to the grid are adaptations around MorphApp. The
+current `index.html` additionally matches each main outline's area to the linear
+morph at the same time. This browser-side area correction does not require
+regenerating `forsch_map_data.js`; it also means the result is not the paper's
+strict constant-velocity/self-contained construction.
