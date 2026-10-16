@@ -430,9 +430,10 @@
     return { src: Float64Array.from(src), dst: Float64Array.from(dst) };
   }
 
-  // Pair two arbitrary closed rings by normalised arc length. This is used only
-  // for the short original-outline -> schematic-outline introduction in the
-  // Forsch hybrid, so both modes retain exactly the same t=0 map.
+  // Pair two arbitrary closed rings by normalised arc length. The Forsch hybrid's
+  // short original-outline -> schematic-outline introduction uses it only when the
+  // two outlines share no point (see pairRingsAnchored), so both modes retain
+  // exactly the same t=0 map.
   function flatArea(flat) {
     let a = 0;
     const m = flat.length / 2;
@@ -492,6 +493,86 @@
       previous = f;
       const a = A.at(f), b = B.at(f + phase);
       src.push(a[0], a[1]); dst.push(b[0], b[1]);
+    }
+    return { src: Float64Array.from(src), dst: Float64Array.from(dst) };
+  }
+
+  // Pair the Census outline with the schematic outline made from it. Douglas-Peucker
+  // keeps original points, so many schematic corners sit exactly on a Census vertex.
+  // Those shared points are anchors that pair with themselves, and only the stretch
+  // between two neighbouring anchors is paired by arc length. Every point then moves
+  // within its own stretch instead of sliding along the outline, which is what made
+  // outlines fold. With no shared point it falls back to pairRingsByArc.
+  function pairRingsAnchored(source, targetInput) {
+    let target = targetInput;
+    if (Math.sign(flatArea(source)) !== Math.sign(flatArea(target))) target = reverseFlat(target);
+    const n = source.length / 2, m = target.length / 2, EPS = 0.01;
+    const cell = (v) => Math.round(v / EPS), grid = new Map();
+    for (let i = 0; i < n; i++) {
+      const key = cell(source[2 * i]) + "," + cell(source[2 * i + 1]);
+      if (!grid.has(key)) grid.set(key, []);
+      grid.get(key).push(i);
+    }
+    // Every schematic point within EPS of a Census vertex, as [censusIndex, schematicIndex].
+    const found = [];
+    for (let j = 0; j < m; j++) {
+      const x = target[2 * j], y = target[2 * j + 1], gx = cell(x), gy = cell(y);
+      let best = -1, bestDistance = EPS;
+      for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) {
+        for (const i of grid.get(gx + a + "," + (gy + b)) || []) {
+          const distance = Math.hypot(source[2 * i] - x, source[2 * i + 1] - y);
+          if (distance < bestDistance) { bestDistance = distance; best = i; }
+        }
+      }
+      if (best >= 0) found.push([best, j]);
+    }
+    if (!found.length) return pairRingsByArc(source, targetInput);
+    // Keep the most anchors whose Census indices go round in the same order as the
+    // schematic ones (a longest non-decreasing run), so no stretch runs backwards.
+    let anchors = [];
+    for (let base = 0; base < found.length && anchors.length < found.length; base++) {
+      const start = found[base][0], run = [];
+      for (let k = 0; k < found.length; k++) run.push(found[(base + k) % found.length]);
+      const tails = [0], ends = [0], parent = [-1];
+      for (let k = 1; k < run.length; k++) {
+        const key = (run[k][0] - start + n) % n;
+        if (key === 0) continue;
+        let lo = 1, hi = tails.length;
+        while (lo < hi) { const mid = (lo + hi) >> 1; if (tails[mid] <= key) lo = mid + 1; else hi = mid; }
+        tails[lo] = key; ends[lo] = k; parent[k] = ends[lo - 1];
+      }
+      if (tails.length <= anchors.length) continue;
+      anchors = [];
+      for (let k = ends[tails.length - 1]; k >= 0; k = parent[k]) anchors.push(run[k]);
+      anchors.reverse();
+    }
+    const walk = (flat, count, from, steps) => {
+      const points = [], lengths = [0];
+      for (let k = 0; k <= steps; k++) { const i = (from + k) % count; points.push([flat[2 * i], flat[2 * i + 1]]); }
+      for (let k = 1; k < points.length; k++) lengths.push(lengths[k - 1] + Math.hypot(points[k][0] - points[k - 1][0], points[k][1] - points[k - 1][1]));
+      const total = lengths[lengths.length - 1];
+      return { points, params: lengths.map((l) => (total > 0 ? l / total : 0)), total };
+    };
+    const at = (w, f) => {
+      if (!(w.total > 0)) return w.points[0];
+      let lo = 0, hi = w.points.length - 1;
+      while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (w.params[mid] <= f) lo = mid; else hi = mid; }
+      const span = w.params[hi] - w.params[lo], r = span > 0 ? (f - w.params[lo]) / span : 0, a = w.points[lo], b = w.points[hi];
+      return [a[0] + (b[0] - a[0]) * r, a[1] + (b[1] - a[1]) * r];
+    };
+    const src = [], dst = [], count = anchors.length;
+    for (let a = 0; a < count; a++) {
+      const [s0, t0] = anchors[a], [s1, t1] = anchors[(a + 1) % count];
+      const A = walk(source, n, s0, count === 1 ? n : (s1 - s0 + n) % n);
+      const B = walk(target, m, t0, count === 1 ? m : (t1 - t0 + m) % m);
+      const params = A.params.slice(0, -1).concat(B.params.slice(0, -1)).sort((x, y) => x - y);
+      let previous = -1;
+      for (const f of params) {
+        if (f - previous < 1e-10) continue;
+        previous = f;
+        const p = at(A, f), q = at(B, f);
+        src.push(p[0], p[1]); dst.push(q[0], q[1]);
+      }
     }
     return { src: Float64Array.from(src), dst: Float64Array.from(dst) };
   }
@@ -557,7 +638,7 @@
       schematic[i] = center[0] + (first[i] - center[0]) * scale;
       schematic[i + 1] = center[1] + (first[i + 1] - center[1]) * scale;
     }
-    d.forschIntro = pairRingsByArc(d.parts[0].src, schematic);
+    d.forschIntro = pairRingsAnchored(d.parts[0].src, schematic);
     d.linearArea = linearAreaCoefficients(d.parts[0]);
     forschReady++;
   }
