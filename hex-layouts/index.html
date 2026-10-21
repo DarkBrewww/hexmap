@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Hex Map Layouts</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="data.js"></script>
+  <script defer src="engine.js"></script>
+  <script defer src="jobs.js"></script>
+  <script defer src="collection.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header class="masthead">
+    <h1>Hex Map Layouts</h1>
+  </header>
+  <main>
+    <div class="workspace">
+      <aside class="settings">
+        <form id="generate-form" class="panel">
+          <div class="section-title"><h2>Parameters</h2></div>
+          <label class="field" for="layout-mode">Layout mode<select id="layout-mode"><option value="generated">Generated grid</option><option value="nyu-fixed">Fixed NYU grid</option></select></label>
+          <p class="muted" id="mode-note">Generate the cell positions and district assignments.</p>
+          <p class="muted">Separate values with commas to test every combination.</p>
+          <fieldset id="orientation-fields"><legend>Hex orientation</legend><div class="shape-options">
+            <label><input type="radio" name="shape" value="flat-side" checked><span class="hex-icon pointy" aria-hidden="true">⬡</span><span>Flat-side<small>Vertical sides</small></span></label>
+            <label><input type="radio" name="shape" value="flat-base"><span class="hex-icon" aria-hidden="true">⬡</span><span>Flat-base<small>Horizontal bases</small></span></label>
+          </div></fieldset>
+          <label class="field" for="noise">Noise<input id="noise" value="0, 0.05" autocomplete="off" spellcheck="false"><small>Random centroid displacement: 0–2. Set 0 for none.</small></label>
+          <label class="field" for="transform">Transform<input id="transform" value="0.6, 1" autocomplete="off" spellcheck="false"><small>Position transformation: 0 = none, 1 = full.</small></label>
+          <label class="field" for="smooth">Smooth<input id="smooth" value="20" autocomplete="off" spellcheck="false"><small>Boundary basis count: 3–128; fewer means smoother. Set 0 to disable.</small></label>
+          <label class="field" for="shift">Shift<input id="shift" value="none, x, y, xy" autocomplete="off" spellcheck="false"><small>Half-step grid offset: none, horizontal (x), vertical (y), or both (xy).</small></label>
+          <div class="combination-note" id="combination-note">16 combinations</div>
+          <div id="input-error" class="error" role="alert" hidden></div>
+          <div class="button-row"><button type="submit" id="generate" class="primary">Generate layouts</button><button type="button" id="cancel" hidden>Stop</button></div>
+          <progress id="progress" max="1" value="0" hidden></progress>
+          <p id="progress-status" class="status" role="status"></p>
+        </form>
+
+        <form id="weights-form" class="panel">
+          <div class="section-title"><h2>Ranking weights</h2></div>
+          <p class="muted">Higher weights give a metric more influence. Layouts do not change.</p>
+          <label class="weight-field" for="weight-distance"><span>Distance<small>Transformed centroid to cell</small></span><input id="weight-distance" type="number" min="0" step="0.1" value="1"></label>
+          <label class="weight-field" for="weight-adjacency"><span>Adjacency<small>Mean fraction of missing neighbors</small></span><input id="weight-adjacency" type="number" min="0" step="0.1" value="1"></label>
+          <label class="weight-field" for="weight-angle"><span>Orientation<small>Neighbor direction error (radians)</small></span><input id="weight-angle" type="number" min="0" step="0.1" value="1"></label>
+          <label class="weight-field" for="weight-roughness"><span>Roughness<small>Normalized boundary roughness</small></span><input id="weight-roughness" type="number" min="0" step="0.1" value="1"></label>
+          <div id="weight-error" class="error" role="alert" hidden></div>
+          <button class="secondary full" type="submit">Update ranking</button>
+          <p class="muted formula">Score = sum of weight × metric. Lower is better.</p>
+          <p class="muted" id="fixed-ranking-note" hidden>Roughness is constant when the occupied cells are fixed.</p>
+        </form>
+      </aside>
+
+      <section class="content">
+        <div class="panel map-comparison">
+          <div class="comparison-heading"><h2>Map comparison</h2><button id="save-selected" type="button" disabled>Save layout</button></div>
+          <div class="comparison-controls">
+            <label for="reference-view">Compare with<select id="reference-view"><option value="geography">Original geography</option><option value="nyu-original">Original NYU hex map</option></select></label>
+            <label for="state-focus">Highlight state<select id="state-focus"><option value="">All states</option></select></label>
+          </div>
+          <div class="map-pair">
+            <section><div class="map-heading"><h3 id="reference-title">Original geography</h3><span id="reference-shape">Census · Albers USA</span></div><canvas id="source-map" height="340" role="img" aria-label="Reference map"></canvas></section>
+            <section><div class="map-heading"><h3 id="selected-title">Hex layout</h3><span id="selected-shape"></span></div><canvas id="selected-map" height="340" role="img" aria-label="Selected hex layout"></canvas></section>
+          </div>
+          <div class="metric-table-wrap" id="metrics-comparison" hidden><table class="metric-table"><caption>Layout metrics · lower is better</caption><thead><tr><th scope="col">View</th><th scope="col">Score</th><th scope="col">Distance</th><th scope="col">Adjacency</th><th scope="col">Orientation</th><th scope="col">Roughness</th><th scope="col">Original movement</th></tr></thead><tbody id="metrics-body"></tbody></table></div>
+        </div>
+
+        <div class="results-heading"><div><h2>Layouts</h2><p id="result-summary" class="muted">Sorted by score, lowest first.</p></div><div class="export-controls"><label for="export-scope">Export<select id="export-scope"><option value="all">All layouts</option><option value="selected">Selected layouts</option></select></label><button type="button" id="export" disabled>Export JSON</button></div></div>
+        <div class="export-selection-bar"><span id="selection-count">0 selected</span><button id="select-all" type="button" disabled>Select all</button><button id="clear-selection" type="button" disabled>Clear selection</button></div>
+        <p id="export-status" class="status" role="status"></p>
+        <div id="empty-state" class="empty-state"><h3>No layouts yet</h3><p>Choose parameters, then select Generate layouts.</p></div>
+        <div id="results" class="results-grid"></div>
+        <details id="failure-section" class="panel" hidden><summary id="failure-title">Rejected combinations</summary><div id="failures"></div></details>
+        <details class="panel methods"><summary>Method and metric definitions</summary>
+          <h3>Generation</h3>
+          <p>Based on McNeill &amp; Hale (2017), <a href="https://doi.org/10.1111/cgf.13200" target="_blank" rel="noreferrer">Generating Tile Maps</a> (<a href="https://gjmcn.github.io/tile-maps-eurovis-demo/" target="_blank" rel="noreferrer">authors' demo</a>).</p>
+          <ol><li>Perturb centroids with Noise, run 30 position updates, and interpolate using Transform.</li><li>Transform and smooth the containing boundary, then fit a hex grid with one cell per mainland district.</li><li>Assign districts to cells using the Hungarian algorithm to minimize squared distance. Ranking weights apply afterward, not during assignment.</li></ol>
+          <h3>Fixed NYU grid</h3>
+          <p>Keep the 436 NYU cells at the exact positions, orientation, size, and spacing used by the morph viewer, including the small drawing gaps. Reuse the generated mode's centroid transformation, then reassign all 436 districts with the Hungarian algorithm. No state or inset restrictions are imposed on assignments. Smooth, Shift, and hex orientation are locked; only Noise and Transform vary.</p>
+          <p>The original NYU assignment is a reference, not a generated candidate. Save candidates to collect layouts across modes and batches. The main Export JSON button exports all or selected layouts from the current batch, in current rank order. Export saved group exports only the saved layouts, sorted by the current ranking weights.</p>
+          <h3>Metrics</h3>
+          <ul><li><strong>Distance:</strong> Mean transformed-centroid-to-cell distance, divided by the original grid reference step. It excludes movement caused by Transform. The original NYU reference uses untransformed geographic centers, so its Distance and Score are not strictly like-for-like with transformed candidates.</li><li><strong>Adjacency:</strong> Mean fraction of each district's original neighbors that are no longer adjacent.</li><li><strong>Orientation:</strong> Mean direction error to original neighbors, in radians (0–&pi;).</li><li><strong>Roughness:</strong> Ideal occupied-grid perimeter divided by the equal-area circle's perimeter, minus 1. Drawing gaps are ignored for topology and roughness. This metric is constant in fixed-NYU mode.</li><li><strong>Original movement:</strong> Mean distance from original geographic centroids to assigned cell centers, divided by the same reference step in both modes.</li></ul>
+          <h3>Data and validity</h3>
+          <p>436 districts: 433 mainland, 1 Alaska, and 2 Hawaii. Census geometry uses the Albers USA projection. Generated-grid mode places Alaska and Hawaii near their projected insets and does not use NYU cell positions. Fixed-NYU mode imports the original cell positions and permits reassignment across all cells. All metrics include all districts.</p>
+          <p>A valid layout assigns every district once to a unique, finite cell on a common hex grid with no overlapping interiors. This does not guarantee preserved adjacency, connectivity, or absence of holes. Self-intersecting containing boundaries are rejected.</p>
+          <p id="boundary-note"></p>
+          <h3>Search and reproducibility</h3>
+          <p>Every combination of the entered values is tested, up to 512 per batch—not every possible layout. Duplicate layouts remain listed under their respective parameters. Grid fitting stops after 50 iterations; failure does not prove that no solution exists.</p>
+          <p>Random seed: 42. The same Noise value shares a sample across other parameters; different Noise values use different deterministic samples. Hex size depends on the transformed boundary and grid fitting. Boundary sampling and inset placement are adaptations, so results can differ from the authors' demo.</p>
+          <h3>State colors</h3>
+          <p>Each state has one consistent, formula-generated color across all views; these colors are not NYU's palette or thematic values. Fifty-one muted hues are not reliably distinguishable by eye. Highlight state keeps one state's districts colored and outlines them while dimming the rest.</p>
+        </details>
+      </section>
+      <aside class="saved-panel panel" id="saved-panel" aria-labelledby="saved-heading">
+        <div class="comparison-heading"><h2 id="saved-heading">Saved layouts</h2><span id="saved-count">0</span></div>
+        <p class="muted">Keep favorites across batches. Export before reloading.</p>
+        <p id="saved-empty" class="muted">Select Save on a layout to add it here.</p>
+        <div id="saved-list" class="saved-list"></div>
+        <button id="export-saved" type="button" class="full" disabled>Export saved group</button>
+        <p id="saved-status" class="status" role="status"></p>
+      </aside>
+    </div>
+  </main>
+</body>
+</html>

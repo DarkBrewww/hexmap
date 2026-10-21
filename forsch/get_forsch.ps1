@@ -2,7 +2,7 @@
 # "publication", commit 4919c316) and the libraries it needs, into lib\ and src\
 # next to this script.
 #
-#   powershell -ExecutionPolicy Bypass -File "$HOME\OneDrive\Desktop\AP\forsch\get_forsch.ps1"
+#   powershell -ExecutionPolicy Bypass -File .\forsch\get_forsch.ps1
 #
 # Only the three modules MorphApp uses are fetched (util, isochronedataobjects,
 # schematicmorph). GeoTools is not downloaded: shims\ stands in for the few

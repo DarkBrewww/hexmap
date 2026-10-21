@@ -96,6 +96,11 @@
   button:disabled { color: var(--muted); cursor: default; }
   button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
   button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  select { font: inherit; color: var(--ink); background: var(--control); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; max-width: 100%; }
+  select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .layout-controls { padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+  #layout-status { flex-basis: 100%; margin: 0; color: var(--ink-2); font-size: 12px; }
+  #layout-status[data-error="true"] { color: var(--overlap); }
   .slider { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-2); }
   .slider input { width: 220px; accent-color: var(--accent); }
   .slider output { font-variant-numeric: tabular-nums; min-width: 3.2em; color: var(--ink); }
@@ -190,7 +195,16 @@
 <body>
 <main>
   <h1>Hexmap morph comparison</h1>
-  <p class="sub">The 436 districts of the 119th Congress (Census, 1:20M) morphing into the Congressional District Health Dashboard hex layout. Switch methods without changing the map or hex endpoints, then compare overlap, sampled self-crossings and area change.</p>
+  <p class="sub">Morph the 436 districts of the 119th Congress (Census, 1:20M) into the original NYU hex layout or an imported layout. Compare Linear and Forsch hybrid with the same endpoints, using overlap, sampled self-crossings and area change.</p>
+
+  <div class="controls layout-controls" aria-label="Target hex layout">
+    <label class="control-set" for="layout-select"><span class="control-label">Target layout</span>
+      <select id="layout-select"><option value="nyu">Original NYU layout</option></select>
+    </label>
+    <button id="import-layout" type="button">Import layout JSON</button>
+    <input id="layout-file" type="file" accept=".json,application/json" hidden>
+    <p id="layout-status" role="status">Import a Hex Map Layouts export, then choose a candidate.</p>
+  </div>
 
   <div class="controls">
     <div class="control-set">
@@ -263,6 +277,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script src="hexmap_data.js"></script>
 <script src="forsch_map_data.js"></script>
+<script src="layout-import.js"></script>
 <script>
 (function () {
   "use strict";
@@ -335,15 +350,18 @@
   const tx = cmx - s * pmx;
   const ty = cmy - s * pmy;
 
-  const R = s * DATA.hexRadius;                     // drawn hex radius on screen
-  const STEP = s * DATA.gridRadius * Math.sqrt(3);  // distance between neighbouring hex centres
+  const NYU_R = s * DATA.hexRadius;
+  const NYU_STEP = s * DATA.gridRadius * Math.sqrt(3);
+  let R = NYU_R;                     // drawn hex radius on screen
+  let STEP = NYU_STEP;               // distance between neighbouring hex centres
+  let activeLayout = null;
   const hexCenter = (p) => [s * p.cx + tx, -s * p.cy + ty];
 
   // Pointy-top hex, corners in the same order as cdhd_hex_119.geojson.
   function hexCorners([X, Y]) {
     const out = [];
     for (let k = 0; k < 6; k++) {
-      const a = (Math.PI / 180) * (-30 + 60 * k);
+      const a = (Math.PI / 180) * ((activeLayout?.shape === "flat-base" ? 0 : -30) + 60 * k);
       out.push([X + R * Math.cos(a), Y - R * Math.sin(a)]);
     }
     return out;
@@ -577,9 +595,12 @@
     return { src: Float64Array.from(src), dst: Float64Array.from(dst) };
   }
 
-  const districts = features.map((f, i) => {
+  function buildDistricts(layout = null) {
+  const cells = layout ? new Map(layout.cells.map((c) => [c.id, c])) : null;
+  return features.map((f, i) => {
     const p = f.properties;
-    const center = hexCenter(p);
+    const cell = cells?.get(p.geo_fips);
+    const center = cell ? [cell.x, cell.y] : hexCenter(p);
     const corners = hexCorners(center);
     const rings = projectedRings(f);
     // The largest ring becomes the hex. Any other pieces (islands) shrink
@@ -595,11 +616,12 @@
       parts.push({ src, dst });
     });
     // Neighbours: kept (on both maps), lost (map only), fresh (hex only).
-    const mapN = new Set(p.map_neighbors || []), hexN = new Set(p.hex_neighbors);
+    const mapN = new Set(p.map_neighbors || []), hexN = new Set(layout ? layout.neighbors[p.geo_fips] : p.hex_neighbors);
     const forsch = FORSCH_DATA && FORSCH_DATA.districts ? FORSCH_DATA.districts[p.geo_fips] || null : null;
     return {
       id: p.geo_fips,
       properties: p,
+      cell,
       centroid: centroids[i],
       center,
       corners,
@@ -611,6 +633,8 @@
       fresh: new Set([...hexN].filter((x) => !mapN.has(x))),
     };
   });
+  }
+  let districts = buildDistricts();
 
   // Area of the linear morph's main ring at t. Every point moves in a straight
   // line, so the shoelace sum is a quadratic in t: A(t) = c0 + c1 t + c2 t^2.
@@ -630,7 +654,9 @@
 
   const FORSCH_INTRO = 0.12;
   let forschReady = 0;
-  for (const d of districts) {
+  function prepareForsch(items) {
+  forschReady = 0;
+  for (const d of items) {
     if (!d.forsch || !Array.isArray(d.forsch.states) || !d.forsch.states.length) continue;
     const f = d.forsch, first = f.states[0], scale = 1 / (f.sourceScale || 1), center = f.sourceCenter || d.centroid;
     const schematic = new Float64Array(first.length);
@@ -640,7 +666,36 @@
     }
     d.forschIntro = pairRingsAnchored(d.parts[0].src, schematic);
     d.linearArea = linearAreaCoefficients(d.parts[0]);
+    if (activeLayout) {
+      // The cached solver ends at a nested flat-side hex. Retarget its hybrid
+      // slide after area scaling; rotate gradually only for flat-base targets.
+      const last = f.states[f.states.length - 1];
+      const endArea = flatArea(last);
+      let bx = 0, by = 0;
+      for (let i = 0, j = last.length - 2; i < last.length; j = i, i += 2) {
+        const cross = last[j] * last[i + 1] - last[i] * last[j + 1];
+        bx += (last[j] + last[i]) * cross;
+        by += (last[j + 1] + last[i + 1]) * cross;
+      }
+      bx = bx / (6 * endArea) - center[0];
+      by = by / (6 * endArea) - center[1];
+      const endScale = Math.sqrt(Math.abs(flatArea(d.parts[0].dst) / endArea));
+      d.targetAngle = activeLayout.shape === "flat-base" ? -Math.PI / 6 : 0;
+      const ca = Math.cos(d.targetAngle), sa = Math.sin(d.targetAngle);
+      d.targetSlide = [d.center[0] - center[0] - endScale * (ca * bx - sa * by),
+        d.center[1] - center[1] - endScale * (sa * bx + ca * by)];
+    }
     forschReady++;
+  }
+  }
+  prepareForsch(districts);
+
+  function retargetGeometry(layout) {
+    activeLayout = layout;
+    R = layout ? layout.radius : NYU_R;
+    STEP = layout ? layout.step : NYU_STEP;
+    districts = buildDistricts(layout);
+    prepareForsch(districts);
   }
 
   const round2 = (v) => Math.round(v * 100) / 100;
@@ -666,6 +721,8 @@
   function sampleForschMain(d, tt) {
     const f = d.forsch;
     if (!f || !d.forschIntro) return sampleLinearPart(d.parts[0], tt);
+    // Cache coordinates are rounded to 0.001 px. Use exact common endpoints.
+    if (activeLayout && (tt === 0 || tt === 1)) return sampleLinearPart(d.parts[0], tt);
     let m, u = 0;
     if (tt <= FORSCH_INTRO) {
       m = sampleLinearPart(d.forschIntro, tt / FORSCH_INTRO);
@@ -685,10 +742,12 @@
     }
     const [c0, c1, c2] = d.linearArea, target = Math.abs(c0 + (c1 + c2 * tt) * tt), current = Math.abs(shoelace(m));
     const scale = current > 1e-12 ? Math.sqrt(target / current) : tt <= FORSCH_INTRO ? 1 : (1 - u) / (f.sourceScale || 1) + u;
-    const center = f.sourceCenter || d.centroid, slide = f.slide || [f.targetCenter[0] - f.placedCenter[0], f.targetCenter[1] - f.placedCenter[1]];
+    const center = f.sourceCenter || d.centroid, slide = d.targetSlide || f.slide || [f.targetCenter[0] - f.placedCenter[0], f.targetCenter[1] - f.placedCenter[1]];
+    const angle = (d.targetAngle || 0) * u, ca = Math.cos(angle), sa = Math.sin(angle);
     for (let i = 0; i < m; i++) {
-      bufX[i] = center[0] + (bufX[i] - center[0]) * scale + slide[0] * u;
-      bufY[i] = center[1] + (bufY[i] - center[1]) * scale + slide[1] * u;
+      const x = bufX[i] - center[0], y = bufY[i] - center[1];
+      bufX[i] = center[0] + (ca * x - sa * y) * scale + slide[0] * u;
+      bufY[i] = center[1] + (sa * x + ca * y) * scale + slide[1] * u;
     }
     return m;
   }
@@ -744,6 +803,7 @@
   }
   const pad = 12;
   const view = [x0 - pad, y0 - pad, x1 - x0 + 2 * pad, y1 - y0 + 2 * pad];
+  const nyuView = view.slice();
 
   const svg = d3.select("#map").attr("viewBox", view);
   const layer = svg.append("g");
@@ -762,11 +822,15 @@
   // Scale tops out at an even number just above the 99th percentile, so one
   // extreme case (Alaska) doesn't wash out everything else. Past the top, the
   // darkest step.
+  let maxDist;
+  function updateDistanceLegend() {
   const sortedDist = districts.map((d) => d.dist).sort((a, b) => a - b);
-  const maxDist = 2 * Math.ceil(d3.quantileSorted(sortedDist, 0.99) / 2);
+  maxDist = Math.max(2, 2 * Math.ceil(d3.quantileSorted(sortedDist, 0.99) / 2));
   const clipped = sortedDist[sortedDist.length - 1] > maxDist;
   document.getElementById("legend-mid").textContent = maxDist / 2;
   document.getElementById("legend-max").textContent = maxDist + (clipped ? "+" : "");
+  }
+  updateDistanceLegend();
   const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
   function isDark() {
     const theme = document.documentElement.dataset.theme;
@@ -869,6 +933,9 @@
       methodNote.textContent = `Forsch hybrid: ${forschReady} of ${districts.length} main outlines replay MorphApp keyframes; ${failed} fall back to linear. ` +
         `The first ${Math.round(FORSCH_INTRO * 100)}% transitions from the original Census outline to its schematic source. Throughout, each outline is scaled about its source centre so its area matches the linear morph's at the same t, and a slide moves the inner hex to its grid cell. ` +
         "Extra island rings remain linear. This preserves common endpoints for comparison but is not the paper's strict self-contained or constant-velocity construction.";
+      if (activeLayout) methodNote.textContent += activeLayout.shape === "flat-base"
+        ? " Imported flat-base targets reuse the cached core with an additional gradual 30-degree rotation and a retargeted slide; the solver is not rerun."
+        : " Imported targets reuse the cached core with an updated area scale and target slide; the solver is not rerun.";
     }
   }
 
@@ -961,7 +1028,7 @@
       else if (selected.fresh.has(d.id)) rel = `Neighbour of ${name} on the hex map only`;
     }
     return `<strong>${p.geo_name}</strong>` +
-      `<span>${p.state_abbr} · geo_fips ${p.geo_fips} · grid cell (${p.col2}, ${p.row})</span><br>` +
+      `<span>${p.state_abbr} · geo_fips ${p.geo_fips} · grid cell (${d.cell ? d.cell.q : p.col2}, ${d.cell ? d.cell.r : p.row})</span><br>` +
       `<span>Moves ${d.dist.toFixed(1)} hex steps</span><br>` +
       `<span>Neighbours: ${d.kept.size} kept, ${d.lost.size} map only, ${d.fresh.size} hex only</span>` +
       (rel ? `<br><span class="rel">${rel}</span>` : "");
@@ -1000,7 +1067,7 @@
       fmt: (v) => v.toFixed(1) + "%", tick: (v) => v + "%" },
     { key: "crossing", title: "Self-crossing outlines", desc: "Districts with a sampled proper crossing in any component",
       fmt: (v) => Math.round(v) + (Math.round(v) === 1 ? " district" : " districts"), tick: d3.format("d") },
-    { key: "area", title: "Area change", desc: "Mean normalised |dA/dt|, estimated by finite differences",
+    { key: "area", title: "Area change", desc: "Mean normalised |dA/dt|. Hybrid areas are matched to Linear by design.",
       fmt: (v) => v.toFixed(2), tick: d3.format(".1f") },
   ];
   let scores = null;
@@ -1054,13 +1121,15 @@
     return false;
   }
 
-  // Fixed-size raster for the overlap score, independent of the window.
-  const SW = 1200, SH = Math.round((SW * view[3]) / view[2]);
+  // Keep pixels per projected unit and pixel alignment fixed across layouts.
+  // Imported layouts may enlarge the raster bounds, but not its resolution.
+  let SW = 1200, SH = Math.round((SW * view[3]) / view[2]);
   const scoreCanvas = document.createElement("canvas");
   scoreCanvas.width = SW; scoreCanvas.height = SH;
   const sctx = scoreCanvas.getContext("2d", { willReadFrequently: true });
   const sk = SW / view[2];
-  const scoreMatrix = [sk, 0, 0, sk, -view[0] * sk, -view[1] * sk];
+  let scoreMatrix = [sk, 0, 0, sk, -view[0] * sk, -view[1] * sk];
+  let scoreOrigin = nyuView.slice(0, 2);
   function overlapShare(tt, mode) {
     const px = rasterize(sctx, SW, SH, scoreMatrix, tt, mode);
     let covered = 0, over = 0;
@@ -1205,14 +1274,24 @@
   }).observe(chartsEl);
 
   const csvBtn = document.getElementById("csv");
+  function csvCell(value) {
+    let text = String(value ?? "");
+    if (typeof value === "string" && /^[=+@\-\t\r]/.test(text)) text = "'" + text;
+    return '"' + text.replace(/"/g, '""') + '"';
+  }
   csvBtn.addEventListener("click", () => {
     if (!scores) return;
-    const lines = ["method,t,overlap_pct,self_crossing_districts,area_change_rate"].concat(
-      scores.map((r) => [currentMode, r.t.toFixed(2), r.overlap.toFixed(3), r.crossing, r.area.toFixed(4)].join(",")));
+    const layoutId = activeLayout ? activeLayout.id : "nyu-original";
+    const identity = [layoutId, activeLayout ? activeLayout.mode : "nyu-original", importedFileForActive(),
+      activeLayout?.fileHash || "", activeLayout?.shape || "flat-side", STEP, R,
+      sk, scoreOrigin[0], scoreOrigin[1], SW, SH, activeLayout?.metadata.sourceSha256 || "",
+      JSON.stringify(activeLayout?.metadata.parameters || {})].map(csvCell).join(",");
+    const lines = ["method,t,overlap_pct,self_crossing_districts,area_change_rate,layout_id,layout_mode,layout_file,layout_file_sha256,hex_orientation,hex_step,hex_radius,raster_pixels_per_unit,raster_origin_x,raster_origin_y,raster_width,raster_height,layout_source_sha256,layout_parameters"].concat(
+      scores.map((r) => [currentMode, r.t.toFixed(2), r.overlap.toFixed(3), r.crossing, r.area.toFixed(4), identity].join(",")));
     const url = URL.createObjectURL(new Blob([lines.join("\n") + "\n"], { type: "text/csv" }));
     const a = document.createElement("a");
     a.href = url;
-    a.download = `hexmap_scores_${currentMode}.csv`;
+    a.download = `hexmap_scores_${activeLayout ? "candidate-" + layoutId : "nyu-original"}_${currentMode}.csv`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -1222,8 +1301,13 @@
   // ---------------------------------------------------------------------------
   // 9. Notes.
   // ---------------------------------------------------------------------------
-  const rms = Math.sqrt(d3.mean(districts, (d) => d.dist * d.dist));
-  document.getElementById("fit-note").textContent =
+  let rms;
+  function updateLayoutNotes() {
+  rms = Math.sqrt(d3.mean(districts, (d) => d.dist * d.dist));
+  document.getElementById("fit-note").textContent = activeLayout
+    ? `Imported layout: ${activeLayout.shape}, spacing ${STEP.toFixed(3)}, radius ${R.toFixed(3)} projected units. ` +
+      `Exported coordinates are used unchanged, without a new alignment fit. Centroid-to-target distance: ${rms.toFixed(2)} hex steps (RMS).`
+    :
     `Alignment: the hex layout is flipped vertically, scaled by ${s.toFixed(3)} and shifted by ` +
     `(${tx.toFixed(1)}, ${ty.toFixed(1)}) onto d3.geoAlbersUsa, by least squares from hex centres to ` +
     `district centroids. After the fit, a district's centroid sits ${rms.toFixed(2)} hex steps from its hex centre (RMS).`;
@@ -1241,7 +1325,132 @@
       `(${Math.round((100 * keptPairs) / mapPairs)}%). The morph has to pull ${fmtInt(mapPairs - keptPairs)} pairs apart ` +
       `and bring ${fmtInt(hexPairs - keptPairs)} new pairs together. Click a district to see its own.`
     : "Rebuild hexmap_data.js with build_data.mjs to see map neighbours.";
+  }
 
+  // Import changes targets only. No source data or precomputed core is written.
+  const layoutSelect = document.getElementById("layout-select");
+  const layoutFile = document.getElementById("layout-file");
+  const layoutStatus = document.getElementById("layout-status");
+  let importedLayouts = [];
+  let importGeneration = 0;
+  let sourceHashPromise;
+  async function currentSourceHash() {
+    if (!window.crypto?.subtle) return null;
+    if (!sourceHashPromise) sourceHashPromise = fetch("hexmap_data.js")
+      .then((response) => { if (!response.ok) throw new Error("Source unavailable"); return response.arrayBuffer(); })
+      .then((bytes) => window.crypto.subtle.digest("SHA-256", bytes))
+      .then((digest) => Array.from(new Uint8Array(digest), (v) => v.toString(16).padStart(2, "0")).join(""))
+      .catch(() => null);
+    return sourceHashPromise;
+  }
+  function importedFileForActive() { return activeLayout?.fileName || ""; }
+  function layoutMessage(message, error = false) {
+    layoutStatus.textContent = message;
+    layoutStatus.dataset.error = String(error);
+    layoutStatus.removeAttribute("title");
+  }
+  function layoutBounds() {
+    let minX = nyuView[0], minY = nyuView[1], maxX = minX + nyuView[2], maxY = minY + nyuView[3];
+    // Include the diagnostic frames of both methods, not only their endpoints.
+    if (activeLayout) for (let frame = 0; frame < FRAMES; frame++) {
+      for (const mode of ["linear", "forsch"]) for (const d of districts) {
+        for (let part = 0; part < d.parts.length; part++) {
+          const m = sampleDistrictPart(d, part, frame / (FRAMES - 1), mode);
+          for (let i = 0; i < m; i++) {
+            const x = bufX[i], y = bufY[i];
+            if (!Number.isFinite(x) || !Number.isFinite(y)) throw new Error("The target produced non-finite morph geometry.");
+            minX = Math.min(minX, x - pad); minY = Math.min(minY, y - pad);
+            maxX = Math.max(maxX, x + pad); maxY = Math.max(maxY, y + pad);
+          }
+        }
+      }
+    }
+    // Align the expanded canvas to the original pixel lattice for fair scoring.
+    const ix = Math.floor((minX - nyuView[0]) * sk), iy = Math.floor((minY - nyuView[1]) * sk);
+    const ox = nyuView[0] + ix / sk, oy = nyuView[1] + iy / sk;
+    const width = Math.ceil((maxX - ox) * sk), height = Math.ceil((maxY - oy) * sk);
+    if (width > 8192 || height > 8192 || width * height > 16000000) {
+      throw new Error("This layout is too large to score at the fixed raster resolution. Export a layout at the original map scale.");
+    }
+    return {view: [minX, minY, maxX - minX, maxY - minY], width, height, origin: [ox, oy]};
+  }
+  function setLayout(layout) {
+    const previous = activeLayout;
+    const previousDistricts = districts, previousRadius = R, previousStep = STEP, previousReady = forschReady;
+    stop();
+    let bounds;
+    try { retargetGeometry(layout); bounds = layoutBounds(); }
+    catch (error) {
+      activeLayout = previous; districts = previousDistricts;
+      R = previousRadius; STEP = previousStep; forschReady = previousReady;
+      throw error;
+    }
+    scoreGeneration++;
+    scores = null; scoresByMode.linear = null; scoresByMode.forsch = null;
+    selected = null; tip.hidden = true;
+    view.splice(0, 4, ...bounds.view);
+    svg.attr("viewBox", view);
+    zoom.translateExtent([[view[0], view[1]], [view[0] + view[2], view[1] + view[3]]]);
+    svg.interrupt().call(zoom.transform, d3.zoomIdentity);
+    SW = layout ? bounds.width : 1200;
+    SH = layout ? bounds.height : Math.round(1200 * nyuView[3] / nyuView[2]);
+    scoreOrigin = layout ? bounds.origin : nyuView.slice(0, 2);
+    scoreCanvas.width = SW; scoreCanvas.height = SH;
+    scoreMatrix = [sk, 0, 0, sk, -scoreOrigin[0] * sk, -scoreOrigin[1] * sk];
+    districtPaths.data(districts, (d) => d.id);
+    hexLayer.selectAll("path").data(districts, (d) => d.id)
+      .attr("d", (d) => "M" + d.corners.map(([x, y]) => round2(x) + "," + round2(y)).join("L") + "Z");
+    updateDistanceLegend(); select(null); updateLayoutNotes(); updateMethodUI();
+    render(0); activateScores(currentMode);
+    layoutMessage(layout
+      ? layout.fileName || "Imported export"
+      : "Import a Hex Map Layouts export, then choose a candidate.");
+    if (layout?.sourceWarning) layoutStatus.title = layout.sourceWarning.trim();
+  }
+  document.getElementById("import-layout").addEventListener("click", () => layoutFile.click());
+  layoutFile.addEventListener("change", async () => {
+    const file = layoutFile.files[0];
+    if (!file) return;
+    const generation = ++importGeneration;
+    try {
+      if (!window.HexLayoutImport) throw new Error("layout-import.js is missing. Keep it beside index.html.");
+      if (file.size > 64 * 1024 * 1024) throw new Error("Choose a JSON export smaller than 64 MiB.");
+      layoutMessage("Reading and validating layout candidates...");
+      const text = await file.text();
+      if (generation !== importGeneration) return;
+      const candidates = window.HexLayoutImport.parse(text, features.map((f) => f.properties.geo_fips));
+      const bytes = new TextEncoder().encode(text);
+      const digest = window.crypto?.subtle ? await window.crypto.subtle.digest("SHA-256", bytes) : null;
+      const sourceHash = await currentSourceHash();
+      if (generation !== importGeneration) return;
+      const fileHash = digest ? Array.from(new Uint8Array(digest), (v) => v.toString(16).padStart(2, "0")).join("") : "";
+      for (const candidate of candidates) {
+        candidate.fileName = file.name; candidate.fileHash = fileHash;
+        candidate.sourceWarning = !sourceHash || !candidate.metadata.sourceSha256
+          ? " Source fingerprint could not be verified."
+          : sourceHash !== candidate.metadata.sourceSha256
+            ? " Warning: this export was built from a different source file; the current Census geometry is used."
+            : " Source fingerprint matches.";
+      }
+      setLayout(candidates[0]);
+      importedLayouts = candidates;
+      layoutSelect.replaceChildren(new Option("Original NYU layout", "nyu"),
+        ...candidates.map((c, i) => new Option(c.label, String(i))));
+      layoutSelect.value = "0";
+    } catch (error) {
+      if (generation === importGeneration) layoutMessage(`Import failed: ${error.message} The current layout is unchanged.`, true);
+    } finally { if (generation === importGeneration) layoutFile.value = ""; }
+  });
+  layoutSelect.addEventListener("change", () => {
+    importGeneration++;
+    try { setLayout(layoutSelect.value === "nyu" ? null : importedLayouts[Number(layoutSelect.value)]); }
+    catch (error) {
+      layoutSelect.value = activeLayout ? String(importedLayouts.indexOf(activeLayout)) : "nyu";
+      layoutMessage(`Cannot use this candidate: ${error.message} The current layout is unchanged.`, true);
+    }
+  });
+
+  updateLayoutNotes();
   applyColors();
   updateMethodUI();
   render(0);
@@ -1249,8 +1458,10 @@
 
   // Handles for poking at things from the browser console.
   window.hexmap = {
-    projection, districts, render, select, setMode,
-    fit: { s, tx, ty, rmsSteps: rms, hexStep: STEP, hexRadius: R },
+    projection, render, select, setMode,
+    get districts() { return districts; },
+    get layout() { return activeLayout; },
+    get fit() { return { s, tx, ty, rmsSteps: rms, hexStep: STEP, hexRadius: R }; },
     get mode() { return currentMode; },
     get scores() { return scores; },
     scoresByMode,

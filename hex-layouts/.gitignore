@@ -1,0 +1,5 @@
+node_modules/
+validation-results.json
+.DS_Store
+Thumbs.db
+desktop.ini
