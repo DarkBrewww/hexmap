@@ -11,3 +11,7 @@ forsch/lib/
 forsch/src/
 forsch/build/
 forsch/fullmap_work/
+# GridMapPipeline (Meulemans, GPLv3) and its build: fetched by ownlayout/build.sh, not ours to commit
+ownlayout/build/
+gridmap/
+__pycache__/

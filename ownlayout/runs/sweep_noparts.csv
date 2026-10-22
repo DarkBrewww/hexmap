@@ -1,0 +1,11 @@
+layout,map_pairs_kept,map_pairs_kept_pct,within_state_kept_pct,cross_state_kept_pct,state_borders_kept,states_split,direction_error_mean_deg,neighbour_pairs_reversed,distance_rms_hex_steps,distance_max_hex_steps,hex_neighbour_pairs,parts,seconds
+dashboard,476,41.9,48.5,24.8,87/107,MI,54.7,226,4.11,17.79,1171,,
+p20_d3_r0_s1,638,56.2,59.3,48.1,93/107,AR FL IA IL KY MA MI MO NJ NM NV NY TX,32.5,29,3.48,6.61,1161,7,14.41
+p20_d3_r0_s2,638,56.2,59.3,48.1,93/107,AR FL IA IL KY MA MI MO NJ NM NV NY TX,32.5,29,3.48,6.61,1161,7,14.46
+p20_d3_r0_s3,638,56.2,59.3,48.1,93/107,AR FL IA IL KY MA MI MO NJ NM NV NY TX,32.5,29,3.48,6.61,1161,7,13.81
+p10_d3_r0_s1,630,55.5,58.4,47.8,93/107,AR FL IA IL KY MA MI MO NM NV NY TX,31.6,24,3.62,7.58,1141,9,13.4
+p10_d3_r0_s2,630,55.5,58.4,47.8,93/107,AR FL IA IL KY MA MI MO NM NV NY TX,31.6,24,3.62,7.58,1141,9,13.0
+p10_d3_r0_s3,630,55.5,58.4,47.8,93/107,AR FL IA IL KY MA MI MO NM NV NY TX,31.6,24,3.62,7.58,1141,9,13.07
+p5_d5_r0_s1,619,54.5,56.8,48.4,92/107,AL FL IL MA NJ NM NV NY TX VA,31.1,7,3.41,6.91,1163,6,20.52
+p5_d5_r0_s2,619,54.5,56.8,48.4,92/107,AL FL IL MA NJ NM NV NY TX VA,31.1,7,3.41,6.91,1163,6,20.05
+p5_d5_r0_s3,619,54.5,56.8,48.4,92/107,AL FL IL MA NJ NM NV NY TX VA,31.1,7,3.41,6.91,1163,6,15.01
