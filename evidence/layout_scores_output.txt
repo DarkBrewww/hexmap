@@ -1,0 +1,10 @@
+districts 436, map neighbour pairs 1136, of which across state lines 318 (28.0%), state borders 107
+
+layout                         pairs kept  hex pairs  states split   borders kept
+NYU (dashboard)                       476       1171             1        87 / 107   MI
+meulemans-states-p5-d5-s1             610       1087             0       102 / 107   
+meulemans-nostates-p5-d5-s1           619       1163            10        92 / 107   AL,FL,IL,MA,NJ,NM,NV,NY,TX,VA
+gen-n0-t0p3-s10-none                  633       1213             8        97 / 107   MD,MI,MS,NJ,NM,NV,SC,VA
+gen-n0p05-t1-s40-y                    637       1180            10        94 / 107   FL,IL,IN,MD,MS,NJ,NV,NY,TN,VA
+fixed-n0p1-t1                         623       1171            11        94 / 107   FL,HI,IL,MA,MD,MI,NJ,NY,PA,TX,WA
+fixed-n0-t0p6                         617       1171            16        94 / 107   FL,HI,IL,LA,MD,MI,NC,NJ,NM,NV,SC,TN,TX,VA,WA,WI

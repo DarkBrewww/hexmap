@@ -1,0 +1,2 @@
+n = 436: one assignment took 0.04 s
+n = 3142: one assignment took 4.66 s
