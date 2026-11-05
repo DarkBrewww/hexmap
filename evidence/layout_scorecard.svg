@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1362 438" width="1362" height="438" font-family="Helvetica, Arial, sans-serif">
+<rect width="100%%" height="100%%" fill="#fcfcfb"/>
+<text x="16" y="28" font-size="17" font-weight="700" fill="#0b0b0b">Hex layouts scored on every published facet</text>
+<text x="16" y="48" font-size="12" fill="#52514e">Darker = better within each column (best to worst among these 7 layouts). Numbers are the scores. All 7 layouts are Pareto-optimal on these 14 columns: none is beaten on every one.</text>
+<text x="16" y="66" font-size="12" fill="#52514e">Against NYU, every other layout is better on 10 to 13 of the 14 columns.</text>
+<text transform="translate(269.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">Location</text>
+<text x="273.0" y="362" font-size="10" fill="#898781" text-anchor="middle">lower</text>
+<text transform="translate(343.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">Pairs kept</text>
+<text x="347.0" y="362" font-size="10" fill="#898781" text-anchor="middle">higher</text>
+<text transform="translate(417.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">False pairs</text>
+<text x="421.0" y="362" font-size="10" fill="#898781" text-anchor="middle">lower</text>
+<text transform="translate(491.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">Direction</text>
+<text x="495.0" y="362" font-size="10" fill="#898781" text-anchor="middle">lower</text>
+<text transform="translate(565.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">Deform-15</text>
+<text x="569.0" y="362" font-size="10" fill="#898781" text-anchor="middle">lower</text>
+<text transform="translate(639.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">Deform-all</text>
+<text x="643.0" y="362" font-size="10" fill="#898781" text-anchor="middle">lower</text>
+<text transform="translate(713.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">Ortho-15</text>
+<text x="717.0" y="362" font-size="10" fill="#898781" text-anchor="middle">lower</text>
+<text transform="translate(787.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">Ortho-all</text>
+<text x="791.0" y="362" font-size="10" fill="#898781" text-anchor="middle">lower</text>
+<text transform="translate(861.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">Roughness</text>
+<text x="865.0" y="362" font-size="10" fill="#898781" text-anchor="middle">lower</text>
+<text transform="translate(935.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">Shape IoU</text>
+<text x="939.0" y="362" font-size="10" fill="#898781" text-anchor="middle">higher</text>
+<text transform="translate(1009.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">States split</text>
+<text x="1013.0" y="362" font-size="10" fill="#898781" text-anchor="middle">lower</text>
+<text transform="translate(1083.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">Borders kept</text>
+<text x="1087.0" y="362" font-size="10" fill="#898781" text-anchor="middle">higher</text>
+<text transform="translate(1157.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">Overlap, Linear</text>
+<text x="1161.0" y="362" font-size="10" fill="#898781" text-anchor="middle">lower</text>
+<text transform="translate(1231.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">Overlap, Forsch</text>
+<text x="1235.0" y="362" font-size="10" fill="#898781" text-anchor="middle">lower</text>
+<text x="228" y="362" font-size="10" fill="#898781" text-anchor="end">better is</text>
+<text x="228" y="155.0" font-size="12" fill="#0b0b0b" text-anchor="end">NYU</text>
+<g><title>NYU: Location: mean cell displacement, hex steps = 3.54</title><rect x="237.0" y="137.0" width="72" height="28" rx="3" fill="#86b6ef"/><text x="273.0" y="155.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">3.54</text></g>
+<g><title>NYU: Adjacency: map neighbour pairs kept = 476</title><rect x="311.0" y="137.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="347.0" y="155.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">476</text></g>
+<g><title>NYU: Adjacency: hex pairs that aren't map neighbours = 695</title><rect x="385.0" y="137.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="421.0" y="155.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">695</text></g>
+<g><title>NYU: Direction: mean angle error, degrees = 54.7</title><rect x="459.0" y="137.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="495.0" y="155.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">54.7</text></g>
+<g><title>NYU: Deform-15 (local), mean = 6.16</title><rect x="533.0" y="137.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="569.0" y="155.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">6.16</text></g>
+<g><title>NYU: Deform-all (global), mean = 24.79</title><rect x="607.0" y="137.0" width="72" height="28" rx="3" fill="#9ec5f4"/><text x="643.0" y="155.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">24.79</text></g>
+<g><title>NYU: OrthoOrder-15 (local), mean flips of 30 = 6.25</title><rect x="681.0" y="137.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="717.0" y="155.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">6.25</text></g>
+<g><title>NYU: OrthoOrder-all (global), mean flips = 72.3</title><rect x="755.0" y="137.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="791.0" y="155.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">72.3</text></g>
+<g><title>NYU: Compactness: roughness = 1.30</title><rect x="829.0" y="137.0" width="72" height="28" rx="3" fill="#2a78d6"/><text x="865.0" y="155.0" font-size="11.5" fill="#ffffff" text-anchor="middle">1.30</text></g>
+<g><title>NYU: Shape: footprint IoU with the map = 0.627</title><rect x="903.0" y="137.0" width="72" height="28" rx="3" fill="#1c5cab"/><text x="939.0" y="155.0" font-size="11.5" fill="#ffffff" text-anchor="middle">0.627</text></g>
+<g><title>NYU: States split = 1</title><rect x="977.0" y="137.0" width="72" height="28" rx="3" fill="#1c5cab"/><text x="1013.0" y="155.0" font-size="11.5" fill="#ffffff" text-anchor="middle">1</text></g>
+<g><title>NYU: State borders kept = 87</title><rect x="1051.0" y="137.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="1087.0" y="155.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">87</text></g>
+<g><title>NYU: Morph: Linear overlap peak, % = 18.3</title><rect x="1125.0" y="137.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="1161.0" y="155.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">18.3</text></g>
+<g><title>NYU: Morph: Forsch hybrid overlap peak, % = 21.1</title><rect x="1199.0" y="137.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="1235.0" y="155.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">21.1</text></g>
+<text x="228" y="185.0" font-size="12" fill="#0b0b0b" text-anchor="end">meulemans-states-p5-d5-s1</text>
+<g><title>meulemans-states-p5-d5-s1: Location: mean cell displacement, hex steps = 3.88</title><rect x="237.0" y="167.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="273.0" y="185.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">3.88</text></g>
+<g><title>meulemans-states-p5-d5-s1: Adjacency: map neighbour pairs kept = 610</title><rect x="311.0" y="167.0" width="72" height="28" rx="3" fill="#256abf"/><text x="347.0" y="185.0" font-size="11.5" fill="#ffffff" text-anchor="middle">610</text></g>
+<g><title>meulemans-states-p5-d5-s1: Adjacency: hex pairs that aren't map neighbours = 477</title><rect x="385.0" y="167.0" width="72" height="28" rx="3" fill="#184f95"/><text x="421.0" y="185.0" font-size="11.5" fill="#ffffff" text-anchor="middle">477</text></g>
+<g><title>meulemans-states-p5-d5-s1: Direction: mean angle error, degrees = 33.9</title><rect x="459.0" y="167.0" width="72" height="28" rx="3" fill="#256abf"/><text x="495.0" y="185.0" font-size="11.5" fill="#ffffff" text-anchor="middle">33.9</text></g>
+<g><title>meulemans-states-p5-d5-s1: Deform-15 (local), mean = 2.20</title><rect x="533.0" y="167.0" width="72" height="28" rx="3" fill="#1c5cab"/><text x="569.0" y="185.0" font-size="11.5" fill="#ffffff" text-anchor="middle">2.20</text></g>
+<g><title>meulemans-states-p5-d5-s1: Deform-all (global), mean = 26.88</title><rect x="607.0" y="167.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="643.0" y="185.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">26.88</text></g>
+<g><title>meulemans-states-p5-d5-s1: OrthoOrder-15 (local), mean flips of 30 = 2.96</title><rect x="681.0" y="167.0" width="72" height="28" rx="3" fill="#1c5cab"/><text x="717.0" y="185.0" font-size="11.5" fill="#ffffff" text-anchor="middle">2.96</text></g>
+<g><title>meulemans-states-p5-d5-s1: OrthoOrder-all (global), mean flips = 44.9</title><rect x="755.0" y="167.0" width="72" height="28" rx="3" fill="#184f95"/><text x="791.0" y="185.0" font-size="11.5" fill="#ffffff" text-anchor="middle">44.9</text></g>
+<g><title>meulemans-states-p5-d5-s1: Compactness: roughness = 2.70</title><rect x="829.0" y="167.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="865.0" y="185.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">2.70</text></g>
+<g><title>meulemans-states-p5-d5-s1: Shape: footprint IoU with the map = 0.489</title><rect x="903.0" y="167.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="939.0" y="185.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">0.489</text></g>
+<g><title>meulemans-states-p5-d5-s1: States split = 0</title><rect x="977.0" y="167.0" width="72" height="28" rx="3" fill="#184f95"/><text x="1013.0" y="185.0" font-size="11.5" fill="#ffffff" text-anchor="middle">0</text></g>
+<g><title>meulemans-states-p5-d5-s1: State borders kept = 102</title><rect x="1051.0" y="167.0" width="72" height="28" rx="3" fill="#184f95"/><text x="1087.0" y="185.0" font-size="11.5" fill="#ffffff" text-anchor="middle">102</text></g>
+<g><title>meulemans-states-p5-d5-s1: Morph: Linear overlap peak, % = 9.7</title><rect x="1125.0" y="167.0" width="72" height="28" rx="3" fill="#1c5cab"/><text x="1161.0" y="185.0" font-size="11.5" fill="#ffffff" text-anchor="middle">9.7</text></g>
+<g><title>meulemans-states-p5-d5-s1: Morph: Forsch hybrid overlap peak, % = 13.0</title><rect x="1199.0" y="167.0" width="72" height="28" rx="3" fill="#184f95"/><text x="1235.0" y="185.0" font-size="11.5" fill="#ffffff" text-anchor="middle">13.0</text></g>
+<text x="228" y="215.0" font-size="12" fill="#0b0b0b" text-anchor="end">meulemans-nostates-p5-d5-s1</text>
+<g><title>meulemans-nostates-p5-d5-s1: Location: mean cell displacement, hex steps = 3.16</title><rect x="237.0" y="197.0" width="72" height="28" rx="3" fill="#3987e5"/><text x="273.0" y="215.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">3.16</text></g>
+<g><title>meulemans-nostates-p5-d5-s1: Adjacency: map neighbour pairs kept = 619</title><rect x="311.0" y="197.0" width="72" height="28" rx="3" fill="#1c5cab"/><text x="347.0" y="215.0" font-size="11.5" fill="#ffffff" text-anchor="middle">619</text></g>
+<g><title>meulemans-nostates-p5-d5-s1: Adjacency: hex pairs that aren't map neighbours = 544</title><rect x="385.0" y="197.0" width="72" height="28" rx="3" fill="#2a78d6"/><text x="421.0" y="215.0" font-size="11.5" fill="#ffffff" text-anchor="middle">544</text></g>
+<g><title>meulemans-nostates-p5-d5-s1: Direction: mean angle error, degrees = 31.1</title><rect x="459.0" y="197.0" width="72" height="28" rx="3" fill="#1c5cab"/><text x="495.0" y="215.0" font-size="11.5" fill="#ffffff" text-anchor="middle">31.1</text></g>
+<g><title>meulemans-nostates-p5-d5-s1: Deform-15 (local), mean = 1.82</title><rect x="533.0" y="197.0" width="72" height="28" rx="3" fill="#184f95"/><text x="569.0" y="215.0" font-size="11.5" fill="#ffffff" text-anchor="middle">1.82</text></g>
+<g><title>meulemans-nostates-p5-d5-s1: Deform-all (global), mean = 17.58</title><rect x="607.0" y="197.0" width="72" height="28" rx="3" fill="#2a78d6"/><text x="643.0" y="215.0" font-size="11.5" fill="#ffffff" text-anchor="middle">17.58</text></g>
+<g><title>meulemans-nostates-p5-d5-s1: OrthoOrder-15 (local), mean flips of 30 = 2.68</title><rect x="681.0" y="197.0" width="72" height="28" rx="3" fill="#184f95"/><text x="717.0" y="215.0" font-size="11.5" fill="#ffffff" text-anchor="middle">2.68</text></g>
+<g><title>meulemans-nostates-p5-d5-s1: OrthoOrder-all (global), mean flips = 51.9</title><rect x="755.0" y="197.0" width="72" height="28" rx="3" fill="#2a78d6"/><text x="791.0" y="215.0" font-size="11.5" fill="#ffffff" text-anchor="middle">51.9</text></g>
+<g><title>meulemans-nostates-p5-d5-s1: Compactness: roughness = 1.43</title><rect x="829.0" y="197.0" width="72" height="28" rx="3" fill="#3987e5"/><text x="865.0" y="215.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">1.43</text></g>
+<g><title>meulemans-nostates-p5-d5-s1: Shape: footprint IoU with the map = 0.632</title><rect x="903.0" y="197.0" width="72" height="28" rx="3" fill="#1c5cab"/><text x="939.0" y="215.0" font-size="11.5" fill="#ffffff" text-anchor="middle">0.632</text></g>
+<g><title>meulemans-nostates-p5-d5-s1: States split = 10</title><rect x="977.0" y="197.0" width="72" height="28" rx="3" fill="#6da7ec"/><text x="1013.0" y="215.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">10</text></g>
+<g><title>meulemans-nostates-p5-d5-s1: State borders kept = 92</title><rect x="1051.0" y="197.0" width="72" height="28" rx="3" fill="#86b6ef"/><text x="1087.0" y="215.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">92</text></g>
+<g><title>meulemans-nostates-p5-d5-s1: Morph: Linear overlap peak, % = 9.4</title><rect x="1125.0" y="197.0" width="72" height="28" rx="3" fill="#184f95"/><text x="1161.0" y="215.0" font-size="11.5" fill="#ffffff" text-anchor="middle">9.4</text></g>
+<g><title>meulemans-nostates-p5-d5-s1: Morph: Forsch hybrid overlap peak, % = 13.3</title><rect x="1199.0" y="197.0" width="72" height="28" rx="3" fill="#1c5cab"/><text x="1235.0" y="215.0" font-size="11.5" fill="#ffffff" text-anchor="middle">13.3</text></g>
+<text x="228" y="245.0" font-size="12" fill="#0b0b0b" text-anchor="end">gen-n0-t0p3-s10-none</text>
+<g><title>gen-n0-t0p3-s10-none: Location: mean cell displacement, hex steps = 2.99</title><rect x="237.0" y="227.0" width="72" height="28" rx="3" fill="#2a78d6"/><text x="273.0" y="245.0" font-size="11.5" fill="#ffffff" text-anchor="middle">2.99</text></g>
+<g><title>gen-n0-t0p3-s10-none: Adjacency: map neighbour pairs kept = 633</title><rect x="311.0" y="227.0" width="72" height="28" rx="3" fill="#184f95"/><text x="347.0" y="245.0" font-size="11.5" fill="#ffffff" text-anchor="middle">633</text></g>
+<g><title>gen-n0-t0p3-s10-none: Adjacency: hex pairs that aren't map neighbours = 580</title><rect x="385.0" y="227.0" width="72" height="28" rx="3" fill="#5598e7"/><text x="421.0" y="245.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">580</text></g>
+<g><title>gen-n0-t0p3-s10-none: Direction: mean angle error, degrees = 30.8</title><rect x="459.0" y="227.0" width="72" height="28" rx="3" fill="#184f95"/><text x="495.0" y="245.0" font-size="11.5" fill="#ffffff" text-anchor="middle">30.8</text></g>
+<g><title>gen-n0-t0p3-s10-none: Deform-15 (local), mean = 2.10</title><rect x="533.0" y="227.0" width="72" height="28" rx="3" fill="#1c5cab"/><text x="569.0" y="245.0" font-size="11.5" fill="#ffffff" text-anchor="middle">2.10</text></g>
+<g><title>gen-n0-t0p3-s10-none: Deform-all (global), mean = 16.89</title><rect x="607.0" y="227.0" width="72" height="28" rx="3" fill="#256abf"/><text x="643.0" y="245.0" font-size="11.5" fill="#ffffff" text-anchor="middle">16.89</text></g>
+<g><title>gen-n0-t0p3-s10-none: OrthoOrder-15 (local), mean flips of 30 = 2.73</title><rect x="681.0" y="227.0" width="72" height="28" rx="3" fill="#1c5cab"/><text x="717.0" y="245.0" font-size="11.5" fill="#ffffff" text-anchor="middle">2.73</text></g>
+<g><title>gen-n0-t0p3-s10-none: OrthoOrder-all (global), mean flips = 62.7</title><rect x="755.0" y="227.0" width="72" height="28" rx="3" fill="#86b6ef"/><text x="791.0" y="245.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">62.7</text></g>
+<g><title>gen-n0-t0p3-s10-none: Compactness: roughness = 0.59</title><rect x="829.0" y="227.0" width="72" height="28" rx="3" fill="#184f95"/><text x="865.0" y="245.0" font-size="11.5" fill="#ffffff" text-anchor="middle">0.59</text></g>
+<g><title>gen-n0-t0p3-s10-none: Shape: footprint IoU with the map = 0.641</title><rect x="903.0" y="227.0" width="72" height="28" rx="3" fill="#184f95"/><text x="939.0" y="245.0" font-size="11.5" fill="#ffffff" text-anchor="middle">0.641</text></g>
+<g><title>gen-n0-t0p3-s10-none: States split = 8</title><rect x="977.0" y="227.0" width="72" height="28" rx="3" fill="#5598e7"/><text x="1013.0" y="245.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">8</text></g>
+<g><title>gen-n0-t0p3-s10-none: State borders kept = 97</title><rect x="1051.0" y="227.0" width="72" height="28" rx="3" fill="#2a78d6"/><text x="1087.0" y="245.0" font-size="11.5" fill="#ffffff" text-anchor="middle">97</text></g>
+<g><title>gen-n0-t0p3-s10-none: Morph: Linear overlap peak, % = 9.8</title><rect x="1125.0" y="227.0" width="72" height="28" rx="3" fill="#1c5cab"/><text x="1161.0" y="245.0" font-size="11.5" fill="#ffffff" text-anchor="middle">9.8</text></g>
+<g><title>gen-n0-t0p3-s10-none: Morph: Forsch hybrid overlap peak, % = 14.6</title><rect x="1199.0" y="227.0" width="72" height="28" rx="3" fill="#256abf"/><text x="1235.0" y="245.0" font-size="11.5" fill="#ffffff" text-anchor="middle">14.6</text></g>
+<text x="228" y="275.0" font-size="12" fill="#0b0b0b" text-anchor="end">gen-n0p05-t1-s40-y</text>
+<g><title>gen-n0p05-t1-s40-y: Location: mean cell displacement, hex steps = 2.68</title><rect x="237.0" y="257.0" width="72" height="28" rx="3" fill="#184f95"/><text x="273.0" y="275.0" font-size="11.5" fill="#ffffff" text-anchor="middle">2.68</text></g>
+<g><title>gen-n0p05-t1-s40-y: Adjacency: map neighbour pairs kept = 637</title><rect x="311.0" y="257.0" width="72" height="28" rx="3" fill="#184f95"/><text x="347.0" y="275.0" font-size="11.5" fill="#ffffff" text-anchor="middle">637</text></g>
+<g><title>gen-n0p05-t1-s40-y: Adjacency: hex pairs that aren't map neighbours = 543</title><rect x="385.0" y="257.0" width="72" height="28" rx="3" fill="#2a78d6"/><text x="421.0" y="275.0" font-size="11.5" fill="#ffffff" text-anchor="middle">543</text></g>
+<g><title>gen-n0p05-t1-s40-y: Direction: mean angle error, degrees = 29.8</title><rect x="459.0" y="257.0" width="72" height="28" rx="3" fill="#184f95"/><text x="495.0" y="275.0" font-size="11.5" fill="#ffffff" text-anchor="middle">29.8</text></g>
+<g><title>gen-n0p05-t1-s40-y: Deform-15 (local), mean = 1.98</title><rect x="533.0" y="257.0" width="72" height="28" rx="3" fill="#184f95"/><text x="569.0" y="275.0" font-size="11.5" fill="#ffffff" text-anchor="middle">1.98</text></g>
+<g><title>gen-n0p05-t1-s40-y: Deform-all (global), mean = 13.79</title><rect x="607.0" y="257.0" width="72" height="28" rx="3" fill="#184f95"/><text x="643.0" y="275.0" font-size="11.5" fill="#ffffff" text-anchor="middle">13.79</text></g>
+<g><title>gen-n0p05-t1-s40-y: OrthoOrder-15 (local), mean flips of 30 = 2.78</title><rect x="681.0" y="257.0" width="72" height="28" rx="3" fill="#1c5cab"/><text x="717.0" y="275.0" font-size="11.5" fill="#ffffff" text-anchor="middle">2.78</text></g>
+<g><title>gen-n0p05-t1-s40-y: OrthoOrder-all (global), mean flips = 48.9</title><rect x="755.0" y="257.0" width="72" height="28" rx="3" fill="#1c5cab"/><text x="791.0" y="275.0" font-size="11.5" fill="#ffffff" text-anchor="middle">48.9</text></g>
+<g><title>gen-n0p05-t1-s40-y: Compactness: roughness = 1.15</title><rect x="829.0" y="257.0" width="72" height="28" rx="3" fill="#2a78d6"/><text x="865.0" y="275.0" font-size="11.5" fill="#ffffff" text-anchor="middle">1.15</text></g>
+<g><title>gen-n0p05-t1-s40-y: Shape: footprint IoU with the map = 0.586</title><rect x="903.0" y="257.0" width="72" height="28" rx="3" fill="#3987e5"/><text x="939.0" y="275.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">0.586</text></g>
+<g><title>gen-n0p05-t1-s40-y: States split = 10</title><rect x="977.0" y="257.0" width="72" height="28" rx="3" fill="#6da7ec"/><text x="1013.0" y="275.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">10</text></g>
+<g><title>gen-n0p05-t1-s40-y: State borders kept = 94</title><rect x="1051.0" y="257.0" width="72" height="28" rx="3" fill="#5598e7"/><text x="1087.0" y="275.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">94</text></g>
+<g><title>gen-n0p05-t1-s40-y: Morph: Linear overlap peak, % = 10.0</title><rect x="1125.0" y="257.0" width="72" height="28" rx="3" fill="#1c5cab"/><text x="1161.0" y="275.0" font-size="11.5" fill="#ffffff" text-anchor="middle">10.0</text></g>
+<g><title>gen-n0p05-t1-s40-y: Morph: Forsch hybrid overlap peak, % = 14.6</title><rect x="1199.0" y="257.0" width="72" height="28" rx="3" fill="#256abf"/><text x="1235.0" y="275.0" font-size="11.5" fill="#ffffff" text-anchor="middle">14.6</text></g>
+<text x="228" y="305.0" font-size="12" fill="#0b0b0b" text-anchor="end">fixed-n0p1-t1</text>
+<g><title>fixed-n0p1-t1: Location: mean cell displacement, hex steps = 3.02</title><rect x="237.0" y="287.0" width="72" height="28" rx="3" fill="#2a78d6"/><text x="273.0" y="305.0" font-size="11.5" fill="#ffffff" text-anchor="middle">3.02</text></g>
+<g><title>fixed-n0p1-t1: Adjacency: map neighbour pairs kept = 623</title><rect x="311.0" y="287.0" width="72" height="28" rx="3" fill="#1c5cab"/><text x="347.0" y="305.0" font-size="11.5" fill="#ffffff" text-anchor="middle">623</text></g>
+<g><title>fixed-n0p1-t1: Adjacency: hex pairs that aren't map neighbours = 548</title><rect x="385.0" y="287.0" width="72" height="28" rx="3" fill="#2a78d6"/><text x="421.0" y="305.0" font-size="11.5" fill="#ffffff" text-anchor="middle">548</text></g>
+<g><title>fixed-n0p1-t1: Direction: mean angle error, degrees = 31.5</title><rect x="459.0" y="287.0" width="72" height="28" rx="3" fill="#1c5cab"/><text x="495.0" y="305.0" font-size="11.5" fill="#ffffff" text-anchor="middle">31.5</text></g>
+<g><title>fixed-n0p1-t1: Deform-15 (local), mean = 2.18</title><rect x="533.0" y="287.0" width="72" height="28" rx="3" fill="#1c5cab"/><text x="569.0" y="305.0" font-size="11.5" fill="#ffffff" text-anchor="middle">2.18</text></g>
+<g><title>fixed-n0p1-t1: Deform-all (global), mean = 17.16</title><rect x="607.0" y="287.0" width="72" height="28" rx="3" fill="#2a78d6"/><text x="643.0" y="305.0" font-size="11.5" fill="#ffffff" text-anchor="middle">17.16</text></g>
+<g><title>fixed-n0p1-t1: OrthoOrder-15 (local), mean flips of 30 = 2.83</title><rect x="681.0" y="287.0" width="72" height="28" rx="3" fill="#1c5cab"/><text x="717.0" y="305.0" font-size="11.5" fill="#ffffff" text-anchor="middle">2.83</text></g>
+<g><title>fixed-n0p1-t1: OrthoOrder-all (global), mean flips = 53.9</title><rect x="755.0" y="287.0" width="72" height="28" rx="3" fill="#2a78d6"/><text x="791.0" y="305.0" font-size="11.5" fill="#ffffff" text-anchor="middle">53.9</text></g>
+<g><title>fixed-n0p1-t1: Compactness: roughness = 1.30</title><rect x="829.0" y="287.0" width="72" height="28" rx="3" fill="#2a78d6"/><text x="865.0" y="305.0" font-size="11.5" fill="#ffffff" text-anchor="middle">1.30</text></g>
+<g><title>fixed-n0p1-t1: Shape: footprint IoU with the map = 0.634</title><rect x="903.0" y="287.0" width="72" height="28" rx="3" fill="#184f95"/><text x="939.0" y="305.0" font-size="11.5" fill="#ffffff" text-anchor="middle">0.634</text></g>
+<g><title>fixed-n0p1-t1: States split = 11</title><rect x="977.0" y="287.0" width="72" height="28" rx="3" fill="#86b6ef"/><text x="1013.0" y="305.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">11</text></g>
+<g><title>fixed-n0p1-t1: State borders kept = 94</title><rect x="1051.0" y="287.0" width="72" height="28" rx="3" fill="#5598e7"/><text x="1087.0" y="305.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">94</text></g>
+<g><title>fixed-n0p1-t1: Morph: Linear overlap peak, % = 9.6</title><rect x="1125.0" y="287.0" width="72" height="28" rx="3" fill="#184f95"/><text x="1161.0" y="305.0" font-size="11.5" fill="#ffffff" text-anchor="middle">9.6</text></g>
+<g><title>fixed-n0p1-t1: Morph: Forsch hybrid overlap peak, % = 13.7</title><rect x="1199.0" y="287.0" width="72" height="28" rx="3" fill="#1c5cab"/><text x="1235.0" y="305.0" font-size="11.5" fill="#ffffff" text-anchor="middle">13.7</text></g>
+<text x="228" y="335.0" font-size="12" fill="#0b0b0b" text-anchor="end">fixed-n0-t0p6</text>
+<g><title>fixed-n0-t0p6: Location: mean cell displacement, hex steps = 3.02</title><rect x="237.0" y="317.0" width="72" height="28" rx="3" fill="#2a78d6"/><text x="273.0" y="335.0" font-size="11.5" fill="#ffffff" text-anchor="middle">3.02</text></g>
+<g><title>fixed-n0-t0p6: Adjacency: map neighbour pairs kept = 617</title><rect x="311.0" y="317.0" width="72" height="28" rx="3" fill="#1c5cab"/><text x="347.0" y="335.0" font-size="11.5" fill="#ffffff" text-anchor="middle">617</text></g>
+<g><title>fixed-n0-t0p6: Adjacency: hex pairs that aren't map neighbours = 554</title><rect x="385.0" y="317.0" width="72" height="28" rx="3" fill="#3987e5"/><text x="421.0" y="335.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">554</text></g>
+<g><title>fixed-n0-t0p6: Direction: mean angle error, degrees = 29.7</title><rect x="459.0" y="317.0" width="72" height="28" rx="3" fill="#184f95"/><text x="495.0" y="335.0" font-size="11.5" fill="#ffffff" text-anchor="middle">29.7</text></g>
+<g><title>fixed-n0-t0p6: Deform-15 (local), mean = 1.88</title><rect x="533.0" y="317.0" width="72" height="28" rx="3" fill="#184f95"/><text x="569.0" y="335.0" font-size="11.5" fill="#ffffff" text-anchor="middle">1.88</text></g>
+<g><title>fixed-n0-t0p6: Deform-all (global), mean = 16.88</title><rect x="607.0" y="317.0" width="72" height="28" rx="3" fill="#256abf"/><text x="643.0" y="335.0" font-size="11.5" fill="#ffffff" text-anchor="middle">16.88</text></g>
+<g><title>fixed-n0-t0p6: OrthoOrder-15 (local), mean flips of 30 = 2.51</title><rect x="681.0" y="317.0" width="72" height="28" rx="3" fill="#184f95"/><text x="717.0" y="335.0" font-size="11.5" fill="#ffffff" text-anchor="middle">2.51</text></g>
+<g><title>fixed-n0-t0p6: OrthoOrder-all (global), mean flips = 52.4</title><rect x="755.0" y="317.0" width="72" height="28" rx="3" fill="#2a78d6"/><text x="791.0" y="335.0" font-size="11.5" fill="#ffffff" text-anchor="middle">52.4</text></g>
+<g><title>fixed-n0-t0p6: Compactness: roughness = 1.30</title><rect x="829.0" y="317.0" width="72" height="28" rx="3" fill="#2a78d6"/><text x="865.0" y="335.0" font-size="11.5" fill="#ffffff" text-anchor="middle">1.30</text></g>
+<g><title>fixed-n0-t0p6: Shape: footprint IoU with the map = 0.634</title><rect x="903.0" y="317.0" width="72" height="28" rx="3" fill="#184f95"/><text x="939.0" y="335.0" font-size="11.5" fill="#ffffff" text-anchor="middle">0.634</text></g>
+<g><title>fixed-n0-t0p6: States split = 16</title><rect x="977.0" y="317.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="1013.0" y="335.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">16</text></g>
+<g><title>fixed-n0-t0p6: State borders kept = 94</title><rect x="1051.0" y="317.0" width="72" height="28" rx="3" fill="#5598e7"/><text x="1087.0" y="335.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">94</text></g>
+<g><title>fixed-n0-t0p6: Morph: Linear overlap peak, % = 9.2</title><rect x="1125.0" y="317.0" width="72" height="28" rx="3" fill="#184f95"/><text x="1161.0" y="335.0" font-size="11.5" fill="#ffffff" text-anchor="middle">9.2</text></g>
+<g><title>fixed-n0-t0p6: Morph: Forsch hybrid overlap peak, % = 12.8</title><rect x="1199.0" y="317.0" width="72" height="28" rx="3" fill="#184f95"/><text x="1235.0" y="335.0" font-size="11.5" fill="#ffffff" text-anchor="middle">12.8</text></g>
+<text x="16" y="388" font-size="11" fill="#52514e">Units: location in hex steps; direction in degrees; Deform in hex steps²; Ortho in flipped relations; overlap in % of covered area at the worst frame.</text>
+<text x="16" y="406" font-size="11" fill="#52514e">Geometric scores are not reader performance: Schiewe 2021 found they did not match users’ judgements. Made by evidence/evaluate_layouts.py.</text>
+</svg>
