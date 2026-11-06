@@ -56,6 +56,14 @@ Distributions over regions (mean / median / p90 / max)
     gen-n0p05-t1-s40-y            29.8 / 23.6 / 65.7 / 130.8
     fixed-n0p1-t1                 31.5 / 26.1 / 66.8 / 133.6
     fixed-n0-t0p6                 29.7 / 24.3 / 64.2 / 130.8
+  Guide-Dev (share of cell outside the map)
+    NYU                           0.217 / 0.000 / 1.000 / 1.000
+    meulemans-states-p5-d5-s1     0.172 / 0.000 / 1.000 / 1.000
+    meulemans-nostates-p5-d5-s1   0.239 / 0.000 / 1.000 / 1.000
+    gen-n0-t0p3-s10-none          0.265 / 0.000 / 1.000 / 1.000
+    gen-n0p05-t1-s40-y            0.234 / 0.000 / 1.000 / 1.000
+    fixed-n0p1-t1                 0.233 / 0.000 / 1.000 / 1.000
+    fixed-n0-t0p6                 0.234 / 0.000 / 1.000 / 1.000
   Deform-5
     NYU                           4.519 / 2.830 / 9.249 / 74.369
     meulemans-states-p5-d5-s1     1.399 / 0.886 / 3.078 / 11.155
@@ -138,13 +146,13 @@ Distributions over regions (mean / median / p90 / max)
     fixed-n0-t0p6                 52.36 / 49.00 / 87.50 / 157.00
 
 Other per-layout numbers
-  NYU                           location RMS 4.11 (worst 0201), pairs lost 660, omission 0.581, commission 0.594, isolated tiles 1, pairs over 90 deg 226, tile components 3, cells outside map 0.211, states split [MI], new state contacts 25
-  meulemans-states-p5-d5-s1     location RMS 4.31 (worst 3601), pairs lost 526, omission 0.463, commission 0.439, isolated tiles 1, pairs over 90 deg 33, tile components 3, cells outside map 0.167, states split [], new state contacts 1
-  meulemans-nostates-p5-d5-s1   location RMS 3.41 (worst 0620), pairs lost 517, omission 0.455, commission 0.468, isolated tiles 1, pairs over 90 deg 7, tile components 3, cells outside map 0.245, states split [AL FL IL MA NJ NM NV NY TX VA], new state contacts 29
-  gen-n0-t0p3-s10-none          location RMS 3.26 (worst 3402), pairs lost 503, omission 0.443, commission 0.478, isolated tiles 1, pairs over 90 deg 6, tile components 3, cells outside map 0.257, states split [MD MI MS NJ NM NV SC VA], new state contacts 27
-  gen-n0p05-t1-s40-y            location RMS 2.92 (worst 0602), pairs lost 499, omission 0.439, commission 0.460, isolated tiles 1, pairs over 90 deg 16, tile components 3, cells outside map 0.241, states split [FL IL IN MD MS NJ NV NY TN VA], new state contacts 31
-  fixed-n0p1-t1                 location RMS 3.33 (worst 0602), pairs lost 513, omission 0.452, commission 0.468, isolated tiles 1, pairs over 90 deg 28, tile components 3, cells outside map 0.234, states split [FL HI IL MA MD MI NJ NY PA TX WA], new state contacts 33
-  fixed-n0-t0p6                 location RMS 3.31 (worst 0602), pairs lost 519, omission 0.457, commission 0.473, isolated tiles 1, pairs over 90 deg 15, tile components 3, cells outside map 0.234, states split [FL HI IL LA MD MI NC NJ NM NV SC TN TX VA WA WI], new state contacts 33
+  NYU                           location RMS 4.11 (worst 0201), pairs lost 660, omission 0.581, commission 0.594, isolated tiles 1, pairs over 90 deg 226, tile components 3, cells outside map 0.211, cells fully outside 0.151, states split [MI], new state contacts 25
+  meulemans-states-p5-d5-s1     location RMS 4.31 (worst 3601), pairs lost 526, omission 0.463, commission 0.439, isolated tiles 1, pairs over 90 deg 33, tile components 3, cells outside map 0.167, cells fully outside 0.144, states split [], new state contacts 1
+  meulemans-nostates-p5-d5-s1   location RMS 3.41 (worst 0620), pairs lost 517, omission 0.455, commission 0.468, isolated tiles 1, pairs over 90 deg 7, tile components 3, cells outside map 0.245, cells fully outside 0.156, states split [AL FL IL MA NJ NM NV NY TX VA], new state contacts 29
+  gen-n0-t0p3-s10-none          location RMS 3.26 (worst 3402), pairs lost 503, omission 0.443, commission 0.478, isolated tiles 1, pairs over 90 deg 6, tile components 3, cells outside map 0.257, cells fully outside 0.190, states split [MD MI MS NJ NM NV SC VA], new state contacts 27
+  gen-n0p05-t1-s40-y            location RMS 2.92 (worst 0602), pairs lost 499, omission 0.439, commission 0.460, isolated tiles 1, pairs over 90 deg 16, tile components 3, cells outside map 0.241, cells fully outside 0.179, states split [FL IL IN MD MS NJ NV NY TN VA], new state contacts 31
+  fixed-n0p1-t1                 location RMS 3.33 (worst 0602), pairs lost 513, omission 0.452, commission 0.468, isolated tiles 1, pairs over 90 deg 28, tile components 3, cells outside map 0.234, cells fully outside 0.165, states split [FL HI IL MA MD MI NJ NY PA TX WA], new state contacts 33
+  fixed-n0-t0p6                 location RMS 3.31 (worst 0602), pairs lost 519, omission 0.457, commission 0.473, isolated tiles 1, pairs over 90 deg 15, tile components 3, cells outside map 0.234, cells fully outside 0.165, states split [FL HI IL LA MD MI NC NJ NM NV SC TN TX VA WA WI], new state contacts 33
 
 Morph (from evidence/morph_scores.csv): overlap peak at t, overlap mean, self-crossing peak, area change mean / peak
   NYU                           linear   18.3% at t=0.41, mean  11.2%, crossings  36, area 1.138 / 1.568

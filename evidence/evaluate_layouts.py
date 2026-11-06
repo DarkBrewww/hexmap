@@ -324,8 +324,13 @@ def evaluate(ctx, lay):
     perimeter = 6 * ctx.n - 2 * len(hp)                     # hex-layouts/engine.js evaluate()
     min_perimeter = 2 * math.sqrt(math.pi * ctx.n * 3 * SQRT3 / 2)
     out["roughness"] = (perimeter - min_perimeter) / min_perimeter
-    iou, outside = shape_scores(ctx, lay, s, placed)
+    iou, outside, dev = shape_scores(ctx, lay, s, placed)
     out["shape_iou"], out["cells_outside_map"] = iou, outside
+    for k, v in stats(dev.values()).items():
+        out["guide_dev_" + k] = v
+    out["cells_fully_outside"] = sum(d >= 0.999 for d in dev.values()) / ctx.n
+    for i in ctx.ids:
+        per[i]["guide_dev"] = dev[i]
 
     # 6. state structure (evidence/layout_scores.py)
     split = []
@@ -369,7 +374,25 @@ def shape_scores(ctx, lay, s, placed):
     for x, y in placed.values():
         if not any(p <= x <= q for p, q in fmap.intervals_at(y)):
             outside += 1
-    return inter / union, outside / ctx.n
+    # Guide-Dev, adapted from Meulemans 2026 Section 7: the fraction of each cell's hexagon that
+    # the map footprint doesn't cover, with the cell placed by the location fit.
+    dev = {}
+    for (i, (x, y)), ring in zip(placed.items(), hexes):
+        r0 = max(0, math.floor((y - rad - y_lo) / ROW_H))
+        r1 = min(rows - 1, math.floor((y + rad - y_lo) / ROW_H))
+        cell = covered = 0.0
+        for row in range(r0, r1 + 1):
+            yy = y_lo + (row + 0.5) * ROW_H
+            xs = sorted(x1 + (yy - y1) * (x2 - x1) / (y2 - y1)
+                        for (x1, y1), (x2, y2) in zip(ring[0], ring[0][1:] + ring[0][:1])
+                        if (y1 <= yy < y2) or (y2 <= yy < y1))
+            if len(xs) < 2:
+                continue
+            span = [[xs[0], xs[-1]]]
+            cell += xs[-1] - xs[0]
+            covered += overlap_len(span, fmap.intervals_at(yy))
+        dev[i] = 1 - covered / cell if cell else 1.0
+    return inter / union, outside / ctx.n, dev
 
 
 # ---------------------------------------------------------------- morph scores
@@ -616,7 +639,8 @@ def main():
     P.append("")
     P.append("Distributions over regions (mean / median / p90 / max)")
     dist_cols = [("loc", "Location, hex steps", "%.2f"), ("kept_share", "Share of own neighbours kept", "%.2f"),
-                 ("false_per_region", "False neighbours per region", "%.2f"), ("dir", "Direction error per pair, deg", "%.1f")]
+                 ("false_per_region", "False neighbours per region", "%.2f"), ("dir", "Direction error per pair, deg", "%.1f"),
+                 ("guide_dev", "Guide-Dev (share of cell outside the map)", "%.3f")]
     dist_cols += [("deform_%s" % (k or "all"), "Deform-%s" % (k or "all"), "%.3f") for k in KS]
     dist_cols += [("ortho_%s" % (k or "all"), "OrthoOrder-%s" % (k or "all"), "%.2f") for k in KS]
     for key, label, f in dist_cols:
@@ -627,9 +651,9 @@ def main():
     P.append("Other per-layout numbers")
     for r in rows:
         P.append("  %s location RMS %.2f (worst %s), pairs lost %d, omission %.3f, commission %.3f, isolated tiles %d, "
-                 "pairs over 90 deg %d, tile components %d, cells outside map %.3f, states split [%s], new state contacts %d"
+                 "pairs over 90 deg %d, tile components %d, cells outside map %.3f, cells fully outside %.3f, states split [%s], new state contacts %d"
                  % (r["layout"].ljust(w0), r["loc_rms"], r["loc_worst"], r["pairs_lost"], r["omission_rate"], r["commission_rate"],
-                    r["isolated_tiles"], r["dir_over_90"], r["tile_components"], r["cells_outside_map"],
+                    r["isolated_tiles"], r["dir_over_90"], r["tile_components"], r["cells_outside_map"], r["cells_fully_outside"],
                     r["states_split_list"], r["state_contacts_new"]))
     if morph:
         P.append("")
@@ -715,20 +739,28 @@ def main():
           "r_j = cell_j − cell_i (hex steps), Deform-k(i) = min over scalar σ of (1/k) Σ_j |σ d_j − "
           "r_j|², solved in closed form (σ = Σ d·r / Σ|d|²). Units are hex steps squared; 0 "
           "means the neighbourhood is a scaled copy of the map. Only scale is fitted, no rotation or translation, as "
-          "in their code.",
+          "in their code and as the paper says (\"uniform scaling is not considered distortion\"). Two small "
+          "differences from the paper's wording, both following the code: the paper says \"sum of squares\", the "
+          "code (and this script) divides by k, which only rescales each k by a constant; and the paper cites Horn "
+          "1987 for the optimal scale, but with only scale to fit the closed form above is the same answer.",
           "- **OrthoOrder-k** (Meulemans 2026; `analyze/analyzers/OrthogonalOrder.java`): same neighbourhood. For "
           "each neighbour j, +1 if j is left of i on the map but right of i in the grid (or the reverse), and +1 if "
           "j is above i on one but below on the other. A tie on either side (same x, or same y, which is common in a "
-          "hex grid) never counts. Range 0 to 2k.",
+          "hex grid) never counts (the paper doesn't say how ties are handled; this is the code's rule). Range 0 to 2k, "
+          "or 2(n \u2212 1) for k = all, as in the paper. k = 5, 15, 50, 100 and all are the paper's own values.",
           "- **Compactness**: hex pairs = pairs of adjacent cells. Roughness (Paul, `hex-layouts/engine.js` "
           "`evaluate()`) = (P − P_min) / P_min, where P = 6n − 2·(hex pairs) is the footprint's "
           "perimeter in hex sides and P_min is the perimeter of a circle with the same area. Tile components = "
           "connected groups of cells.",
           "- **Shape**: the layout's footprint (touching hexes placed by the location fit) against the map's "
           "footprint (union of all district polygons). IoU = shared area / combined area, by scanlines %.2f units "
-          "apart; 1 means the tile map covers the same ground as the map. Cells outside map = share of fitted cell "
-          "centres outside the map footprint, a stand-in for Meulemans' Guide-Miss, which is tied to his pipeline's "
-          "own guiding shapes and doesn't apply to other generators." % ROW_H,
+          "apart; 1 means the tile map covers the same ground as the map. Guide-Dev (adapted from Meulemans 2026): "
+          "for each cell, the fraction of its hexagon that the map footprint doesn't cover; the paper does this per "
+          "part against the scaled and translated outline of that part, and here the whole map is the outline and "
+          "the location fit is the scaling and translation, so it works for any generator. Cells fully outside = "
+          "share of cells with Guide-Dev 100%%. Cells outside map = share of fitted cell centres outside the map "
+          "footprint. The paper's Guide-Miss isn't computed: it flags cells against the pipeline's own guiding "
+          "shape, which other generators don't have." % ROW_H,
           "- **State structure** (`evidence/layout_scores.py`): a state is split if its cells don't form one "
           "connected group; a state border is kept if two states that share a border on the map still have touching "
           "cells.",
