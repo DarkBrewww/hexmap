@@ -698,6 +698,34 @@ def main():
     for r in rows:
         M.append("| %s%s | " % ("★ " if r["layout"] in front else "", r["layout"])
                  + " | ".join(f % r[c] for c, _, _, f in head) + " |")
+    caption = {
+        "loc_mean": "**Location**: average distance from a district's hex to where the district is on the map, after "
+                    "the best overall scale and shift, in hex steps.",
+        "pairs_kept": "**Pairs kept**: districts that share a border on the map and are still hex neighbours (of {:,} pairs).".format(len(ctx.map_pairs)),
+        "false_pairs": "**False pairs**: hex neighbours that don't share a border on the map.",
+        "dir_mean": "**Direction**: average angle, in degrees, between the direction from one neighbour to the other on "
+                    "the map and in the hex layout; 0 means every neighbour is on the right side.",
+        "deform_15_mean": "**Deform-15**: for each district and its 15 nearest districts on the map, how far their hex "
+                          "positions are from a scaled copy of the map, averaged over districts (hex steps squared). "
+                          "Measures local distortion.",
+        "deform_all_mean": "**Deform-all**: the same over all other districts. Measures distortion of the whole country.",
+        "ortho_15_mean": "**Ortho-15**: for each district, how many of its 15 nearest districts swap sides, left for "
+                         "right or above for below, between the map and the hex layout (0 to 30), averaged over districts.",
+        "ortho_all_mean": "**Ortho-all**: the same over all other districts (0 to %d)." % (2 * (ctx.n - 1)),
+        "roughness": "**Roughness**: how much longer the tile map's outline is than a circle of the same area; 0 is a "
+                     "perfect circle.",
+        "shape_iou": "**Shape IoU**: how much the tile map's footprint and the map's footprint overlap, as shared area "
+                     "over combined area; 1 means they cover the same ground.",
+        "states_split": "**States split**: states whose hexes don't form one connected piece.",
+        "state_borders_kept": "**Borders kept**: pairs of states that share a border on the map and still touch in "
+                              "the hex layout (of %d)." % len(ctx.state_borders),
+        "linear_overlap_peak": "**Overlap, Linear** and **Overlap, Forsch**: the largest share of the drawn area where "
+                               "districts overlap at any frame of the morph from the map to the hex layout, with the "
+                               "linear morph and with the Forsch hybrid, in percent.",
+    }
+    M += ["", "*Table 1. One row per layout, one column per metric; the row \"better is\" says which direction "
+          "is better. " + " ".join(caption[c] for c, _, _, _ in head if c in caption)
+          + " Full definitions are under \"How each metric is computed\".*"]
     M += ["", "★ marks the Pareto-optimal layouts: no other layout is at least as good on every headline metric "
           "and strictly better on one. %d of %d layouts are Pareto-optimal: %s."
           % (len(front), len(rows), ", ".join(front)), ""]
