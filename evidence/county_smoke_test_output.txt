@@ -1,0 +1,3 @@
+3108 counties, one layout in 33.1 s
+hex step 8.586 screen units; pairs kept 6170 of 8732; hex pairs 9052; tile components 1
+wrote evidence/data/county_mainland_smoke_layout.json

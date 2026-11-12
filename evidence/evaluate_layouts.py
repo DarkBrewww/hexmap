@@ -39,9 +39,15 @@ PHASE = {"flat-side": math.pi / 6, "flat-base": 0.0}   # hexCorners in engine.js
 
 
 # ---------------------------------------------------------------- loading
-def load_regions(path):
+def load_regions(path, group=None):
     data = json.load(open(path, encoding="utf-8"))
     regions = sorted(data["regions"], key=lambda r: r["id"])
+    if group:                                   # score one group only, e.g. the mainland counties
+        found = [g for g in data.get("groups", []) if g["id"] == group]
+        if not found:
+            sys.exit("no group %r in %s" % (group, path))
+        keep = {r["id"] for r in found[0]["regions"]}
+        regions = [r for r in regions if r["id"] in keep]
     ids = [r["id"] for r in regions]
     if len(set(ids)) != len(ids):
         sys.exit("duplicate region ids in " + path)
@@ -110,6 +116,7 @@ class Footprint:
     def __init__(self, shapes, y0, rows):
         self.y0, self.rows = y0, rows
         self.buckets = defaultdict(list)          # row -> [(shape index, x1, y1, x2, y2)]
+        self.cache = {}
         for si, rings in enumerate(shapes):
             for ring in rings:
                 m = len(ring)
@@ -123,6 +130,12 @@ class Footprint:
                         self.buckets[row].append((si, x1, y1, x2, y2))
 
     def intervals_at(self, y):
+        if y in self.cache:
+            return self.cache[y]
+        self.cache[y] = out = self._intervals_at(y)
+        return out
+
+    def _intervals_at(self, y):
         row = math.floor((y - self.y0) / ROW_H)
         xs = defaultdict(list)
         for si, x1, y1, x2, y2 in self.buckets.get(row, ()):
@@ -550,17 +563,21 @@ def checks(args, ctx, results):
             k = parts.index("/")
             if k >= 5 and all(p.isdigit() for p in parts[k - 4:k]):
                 expected[parts[0]] = tuple(int(p) for p in parts[k - 4:k])
-        ok_all = True
+        ok_all, compared = True, 0
         for name, (kept, hexp, split, borders) in expected.items():
-            if name not in results:
+            if name not in results or ctx.n != 436:
                 continue
+            compared += 1
             r = results[name]
             got = (r["pairs_kept"], r["hex_pairs"], r["states_split"], r["state_borders_kept"])
             ok = got == (kept, hexp, split, borders)
             ok_all &= ok
             lines.append("layout_scores_output.txt %-28s pairs kept %d, hex pairs %d, states split %d, borders kept %d: %s"
                          % (name, kept, hexp, split, borders, "match" if ok else "MISMATCH, got %s" % (got,)))
-        lines.append("all reference rows reproduced: %s" % ok_all)
+        if compared:
+            lines.append("all reference rows reproduced: %s" % ok_all)
+    if not lines:
+        lines.append("no reference numbers for these regions and layouts, so nothing to recompute")
     return lines
 
 
@@ -571,10 +588,11 @@ def main():
     ap.add_argument("--regions", default=os.path.join(ROOT, "hex-layouts", "data.json"))
     ap.add_argument("--morph", default=os.path.join(HERE, "morph_scores.csv"))
     ap.add_argument("--no-baseline", action="store_true", help="don't score the regions file's nyuTarget")
+    ap.add_argument("--group", help="score only this group of the regions file, e.g. mainland")
     ap.add_argument("--out", default=HERE)
     args = ap.parse_args()
 
-    data, regions, nb = load_regions(args.regions)
+    data, regions, nb = load_regions(args.regions, args.group)
     ctx = Context(regions, nb)
     layouts = []
     if not args.no_baseline and data.get("nyuTarget"):
@@ -803,11 +821,16 @@ def main():
           "- Geometric scores are not proof that a layout is better for readers. Schiewe 2021 ran two surveys with 222 "
           "participants each and found the geometric measures showed unclear trends and didn't match what users "
           "expected; minimising centroid distance didn't match their choices. Claiming \"better for readers\" needs a "
-          "small task-based study.",
-          "- Paul's generated layouts (`gen-*`) are drawn with touching hexes; NYU, his NYU-grid layouts (`fixed-*`) and "
+          "small task-based study."]
+    names = [r["layout"] for r in rows]
+    if any(n.startswith(("gen-", "fixed-")) for n in names):
+        M += ["- Paul's generated layouts (`gen-*`) are drawn with touching hexes; NYU, his NYU-grid layouts (`fixed-*`) and "
           "ours use the dashboard's 11.5/12 size. That changes overlap but no other metric here.",
           "- The four `gen-*` and `fixed-*` layouts were picked from his generator as the two per mode that kept the "
           "most neighbour pairs, so they are not a random sample of what it makes."]
+    if args.group:
+        M += ["- Scored on the `%s` group of the regions file only (%d regions); neighbour pairs to regions outside it "
+              "don't count." % (args.group, ctx.n)]
     with open(os.path.join(args.out, "layout_metrics_summary.md"), "w", encoding="utf-8") as fh:
         fh.write("\n".join(M) + "\n")
 

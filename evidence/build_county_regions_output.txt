@@ -1,0 +1,12 @@
+counties 3142 (Alaska 29, Hawaii 5)
+neighbour pairs 8781, across a state line 1222 (13.9%)
+counties with more than 6 neighbours 707
+connected components by neighbours: 9, sizes [3106, 28, 2, 1, 1, 1, 1, 1]
+isolated counties (no neighbour): 02016 15001 15003 15007 25019 53055
+centroid outside its own county: 11 (02016 02105 02122 26083 29069 29093 44005 48007 51087 53029 55091)
+no area at 1:10m (centre from the outline): 51610 Falls Church, VA 51678 Lexington, VA 51685 Manassas Park, VA
+group mainland 3108 counties, outline rings 79, largest 2968 vertices, simple True, centres outside it 4
+group alaska     29 counties, outline rings 56, largest 598 vertices, simple True, centres outside it 6
+group hawaii      5 counties, outline rings 8, largest 49 vertices, simple True, centres outside it 4
+viewBox 19.31 -2.36 859.17 512.57
+wrote evidence/data/county_regions.json (4.2 MB)
