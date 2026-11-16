@@ -1,0 +1,12 @@
+# Large files that the scripts in each folder write again; see the README files.
+fixed-grid-overlap/candidates.json
+fixed-grid-overlap/candidates_extended.json
+fixed-grid-overlap/candidates-metrics/*
+fixed-grid-overlap/candidates_extended-metrics/*
+!fixed-grid-overlap/candidates-metrics/layout_metrics.csv
+!fixed-grid-overlap/candidates_extended-metrics/layout_metrics.csv
+fixed-grid-overlap/pairs/
+fixed-grid-overlap/reproduce/
+staged-timing/layouts.json
+staged-timing/runs/staged_pairs.csv
+*_log.txt

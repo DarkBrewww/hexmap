@@ -1,0 +1,24 @@
+stagger 0, rule small   reproduces this run's Linear frames for NYU                  yes
+stagger 0, rule outline reproduces this run's Linear frames for NYU                  yes
+stagger 0, rule three   reproduces this run's Linear frames for NYU                  yes
+Linear frames match the published scores for NYU                  yes
+stagger 0, rule small   reproduces this run's Linear frames for fixed-n0p05-t1-s2    yes
+stagger 0, rule outline reproduces this run's Linear frames for fixed-n0p05-t1-s2    yes
+stagger 0, rule three   reproduces this run's Linear frames for fixed-n0p05-t1-s2    yes
+Linear frames match the published scores for fixed-n0p05-t1-s2    yes
+stagger 0, rule small   reproduces this run's Linear frames for fixed-n0-t1          yes
+stagger 0, rule outline reproduces this run's Linear frames for fixed-n0-t1          yes
+stagger 0, rule three   reproduces this run's Linear frames for fixed-n0-t1          yes
+Linear frames match the published scores for fixed-n0-t1          yes
+stagger 0, rule small   reproduces this run's Linear frames for fixed-n0p2-t0p6      yes
+stagger 0, rule outline reproduces this run's Linear frames for fixed-n0p2-t0p6      yes
+stagger 0, rule three   reproduces this run's Linear frames for fixed-n0p2-t0p6      yes
+Linear frames match the published scores for fixed-n0p2-t0p6      yes
+stagger 0, rule small   reproduces this run's Linear frames for fixed-n0p4-t0-s4     yes
+stagger 0, rule outline reproduces this run's Linear frames for fixed-n0p4-t0-s4     yes
+stagger 0, rule three   reproduces this run's Linear frames for fixed-n0p4-t0-s4     yes
+Linear frames match the published scores for fixed-n0p4-t0-s4     yes
+largest difference from Linear's outlines at t = 0 and t = 1, all 75 staged runs: 0 screen units
+farthest any staged outline reaches outside the scored rectangle: none (largest value 0.0, negative means inside)
+districts larger than their hexagon: 120 of 436 (page and this script agree: yes)
+all checks passed: True
