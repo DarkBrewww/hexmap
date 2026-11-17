@@ -60,7 +60,9 @@ def load_regions(path, group=None):
     return data, regions, nb
 
 
-def layout_from(cand, ids, name):
+def layout_from(cand, ids, name, subset=False):
+    # subset: the layout may hold more regions than are scored (a full-map layout scored with
+    # --group); cells of regions outside the group are left out. Every scored region needs a cell.
     grid = cand["grid"]
     shape, step, origin = grid["shape"], float(grid["step"]), grid["origin"]
     if shape not in BASIS:
@@ -75,7 +77,11 @@ def layout_from(cand, ids, name):
         lx, ly = q * u[0] + r * v[0], q * u[1] + r * v[1]          # position in hex steps
         cells[c["id"]] = {"q": q, "r": r, "lat": (lx, ly),
                           "xy": (origin[0] + step * lx, origin[1] + step * ly)}
-    if set(cells) != set(ids):
+    if subset:
+        cells = {i: c for i, c in cells.items() if i in set(ids)}
+        if set(cells) != set(ids):
+            sys.exit("%s: %d of the %d regions in the group have no cell" % (name, len(set(ids) - set(cells)), len(ids)))
+    elif set(cells) != set(ids):
         sys.exit("%s: cells don't cover exactly the %d regions" % (name, len(ids)))
     return {"name": name, "shape": shape, "step": step, "cells": cells}
 
@@ -588,7 +594,8 @@ def main():
     ap.add_argument("--regions", default=os.path.join(ROOT, "hex-layouts", "data.json"))
     ap.add_argument("--morph", default=os.path.join(HERE, "morph_scores.csv"))
     ap.add_argument("--no-baseline", action="store_true", help="don't score the regions file's nyuTarget")
-    ap.add_argument("--group", help="score only this group of the regions file, e.g. mainland")
+    ap.add_argument("--group", help="score only this group of the regions file, e.g. mainland; "
+                    "layouts may also hold cells for regions outside it, which are left out")
     ap.add_argument("--out", default=HERE)
     args = ap.parse_args()
 
@@ -596,13 +603,13 @@ def main():
     ctx = Context(regions, nb)
     layouts = []
     if not args.no_baseline and data.get("nyuTarget"):
-        layouts.append(layout_from(data["nyuTarget"], ctx.ids, "NYU"))
+        layouts.append(layout_from(data["nyuTarget"], ctx.ids, "NYU", subset=bool(args.group)))
     for path in args.layouts:
         payload = json.load(open(path, encoding="utf-8"))
         if payload.get("format") != "hex-layout-lab-v2":
             sys.exit(path + " is not a hex-layout-lab-v2 export")
         for cand in payload["candidates"]:
-            layouts.append(layout_from(cand, ctx.ids, cand["id"]))
+            layouts.append(layout_from(cand, ctx.ids, cand["id"], subset=bool(args.group)))
 
     morph = morph_summary(args.morph) if args.morph and os.path.exists(args.morph) else {}
     results, rows, per_rows = {}, [], []
