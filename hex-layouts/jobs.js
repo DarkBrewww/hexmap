@@ -16,6 +16,62 @@
     return cells.sort((a, b) => d2([a.x, a.y], point) - d2([b.x, b.y], point));
   }
 
+  // Labels the connected pieces of a set of cells; label[i] is the piece of cells[i].
+  function pieces(cells) {
+    const index = new Map(cells.map((c, i) => [key(c), i])), label = new Array(cells.length).fill(-1);
+    let count = 0;
+    for (let start = 0; start < cells.length; start++) {
+      if (label[start] >= 0) continue;
+      label[start] = count;
+      const stack = [start];
+      while (stack.length) {
+        const c = cells[stack.pop()];
+        for (const [dq, dr] of directions) {
+          const j = index.get(`${c.q + dq},${c.r + dr}`);
+          if (j !== undefined && label[j] < 0) { label[j] = count; stack.push(j); }
+        }
+      }
+      count++;
+    }
+    return {count, label};
+  }
+
+  // An inset with three or more regions (the county insets) is drawn smaller, about its anchor,
+  // so that its land covers as many lattice cells as it has regions; this is how the generator
+  // sizes the mainland grid. One Hungarian assignment then takes the scaled centers to free
+  // cells. Regions with a land neighbour in the inset must form one connected piece; regions
+  // without one (islands such as Aleutians West or Kauai) may stand apart. If the connected
+  // regions are split, the inset is shrunk further.
+  function placeLargeInset(group, anchor, grid, step, free) {
+    const n = group.regions.length;
+    const ids = new Set(group.regions.map(r => String(r.id)));
+    const island = group.regions.map(r => !(r.neighbors || []).some(id => String(id) !== String(r.id) && ids.has(String(id))));
+    const rings = Array.isArray(group.boundaryRings) && group.boundaryRings.length ? group.boundaryRings : [group.boundary];
+    const land = rings.reduce((sum, ring) => sum + Math.abs(E.polygonArea(ring)), 0);
+    if (!(land > 0)) throw new Error(`Inset ${group.id} has no land area.`);
+    let reach = 1;
+    while (3 * reach * (reach + 1) + 1 < n) reach++;
+    const first = Math.min(1, Math.sqrt(n * (Math.sqrt(3) / 2) * step ** 2 / land));
+    const scales = Array.from({length: 80}, (_, i) => first * 0.95 ** i).concat(0);
+    for (const scale of scales) {
+      const targets = group.regions.map(r => [anchor[0] + scale * (r.center[0] - anchor[0]), anchor[1] + scale * (r.center[1] - anchor[1])]);
+      for (let radius = reach + 1; radius <= reach + 8; radius++) {
+        const candidates = new Map();
+        for (const target of targets) for (const c of nearby(target, grid, radius)) if (free(c)) candidates.set(key(c), c);
+        const list = [...candidates.values()];
+        if (list.length < n) continue;
+        // Rows past n are empty, so the square solver picks the best n of the candidate cells.
+        const costs = list.map((_, row) => row < n ? Float64Array.from(list, c => d2([c.x, c.y], targets[row])) : new Float64Array(list.length));
+        const chosen = E.hungarian(costs).slice(0, n).map(column => list[column]);
+        const split = pieces(chosen);
+        if (new Set(split.label.filter((_, i) => !island[i])).size > 1) break;
+        const cost = chosen.reduce((sum, c, i) => sum + d2([c.x, c.y], targets[i]), 0);
+        return {cells: chosen, targets, scale, cost, pieces: split.count};
+      }
+    }
+    return null;
+  }
+
   function placeInsets(data, result) {
     const occupied = new Set(result.cells.map(key));
     const cells = result.cells.map(c => ({...c}));
@@ -26,8 +82,18 @@
     const insetDetails = [];
     for (const group of data.groups.filter(g => g.id !== 'mainland')) {
       const n = group.regions.length;
-      if (n !== 1 && n !== 2) throw new Error('Inset adapter supports exactly one or two regions per inset.');
+      if (!n) throw new Error(`Inset ${group.id} has no regions.`);
       const anchor = group.regions.reduce((a, r) => [a[0] + r.center[0] / n, a[1] + r.center[1] / n], [0, 0]);
+      if (n > 2) {
+        const placed = placeLargeInset(group, anchor, result.grid, result.step, free);
+        if (!placed) throw new Error(`No non-overlapping inset placement for ${group.id} keeps its connected regions together.`);
+        placed.cells.forEach((c, i) => {
+          const region = group.regions[i];
+          occupied.add(key(c)); cells.push({...c, id: region.id}); centers.set(region.id, placed.targets[i]);
+        });
+        insetDetails.push({id: group.id, regionCount: n, placement: 'centers scaled about the inset anchor and assigned to free common-lattice cells; regions with a land neighbour form one piece, island regions may stand apart', scale: placed.scale, pieces: placed.pieces, displacementSquared: placed.cost});
+        continue;
+      }
       let best = null, cost = Infinity;
       for (const radius of [2, 4, 8, 16, 32]) {
         for (const a of nearby(anchor, result.grid, radius)) {

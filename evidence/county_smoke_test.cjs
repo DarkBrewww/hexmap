@@ -4,8 +4,9 @@
 //   node evidence/county_smoke_test.cjs [OUT.json]
 //   (default out: evidence/data/county_mainland_smoke_layout.json)
 // Uses the generator's default settings (noise 0, transform 1, smooth 20, no shift, flat-side).
-// Only the mainland group (lower 48 + DC, 3,108 counties): the generator's inset step places
-// one or two regions per inset, and counties have 29 in Alaska and 5 in Hawaii.
+// Only the mainland group (lower 48 + DC, 3,108 counties). The full map, with the 29 Alaska and
+// 5 Hawaii counties placed as insets, comes from runOne in hex-layouts/jobs.js; see
+// node hex-layouts/inset-tests.cjs --county.
 const fs = require("fs");
 const path = require("path");
 const E = require(path.join(__dirname, "..", "hex-layouts", "engine.js"));

@@ -38,7 +38,7 @@ The implementation follows the main steps of McNeill and Hale's *Generating Tile
 | Shift | Half-step grid offset: `none`, `x`, `y`, or `xy`. |
 | Hex orientation | Flat-side, with vertical sides, or flat-base, with horizontal bases. |
 
-The 433 mainland districts use a common containing boundary. Alaska and Hawaii are placed near their projected insets on the same lattice, with the same hex size. This inset placement is an application-specific adaptation. The mainland boundary is the largest exterior Census ring, resampled to 512 points; small offshore components and holes do not constrain generation.
+The 433 mainland districts use a common containing boundary. Alaska and Hawaii are placed near their projected insets on the same lattice, with the same hex size. This inset placement is an application-specific adaptation. An inset of one region takes the nearest free cell, and an inset of two takes the nearest free adjacent pair. An inset of three or more regions, such as the 29 Alaska and 5 Hawaii counties of `evidence/data/county_regions.json`, is first drawn smaller about the mean of its region centers, so that its land covers as many cells as it has regions. One Hungarian assignment then takes the scaled centers to free cells. Regions that share a border with another region of the inset must form one connected piece; regions with no land neighbour in the inset, such as Aleutians West or Kauai, may stand apart. If the connected regions are split, the inset is shrunk in steps of 5% until they are not. The scale and the number of pieces are reported in the layout diagnostics. Inset cells never touch the mainland or another inset. The mainland boundary is the largest exterior Census ring, resampled to 512 points; small offshore components and holes do not constrain generation.
 
 The random seed is 42. The same Noise value uses a shared perturbation sample across other parameter choices and both modes. Distinct parameter combinations can produce identical arrangements.
 
@@ -116,7 +116,10 @@ node engine-tests.cjs
 node integration-tests.cjs
 node fixed-target-tests.cjs
 node collection-tests.cjs
+node inset-tests.cjs
 ```
+
+`node inset-tests.cjs --county` also places the county insets of `evidence/data/county_regions.json`; it takes about 20 seconds.
 
 For a larger generated-layout sweep:
 
