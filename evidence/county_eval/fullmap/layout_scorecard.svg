@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1214 318" width="1214" height="318" font-family="Helvetica, Arial, sans-serif">
+<rect width="100%%" height="100%%" fill="#fcfcfb"/>
+<text x="16" y="28" font-size="17" font-weight="700" fill="#0b0b0b">Hex layouts scored on every published facet</text>
+<text x="16" y="48" font-size="12" fill="#52514e">Darker = better within each column (best to worst among these 3 layouts). Numbers are the scores. All 3 layouts are Pareto-optimal on these 12 columns: none is beaten on every one.</text>
+<text transform="translate(269.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">Location</text>
+<text x="273.0" y="242" font-size="10" fill="#898781" text-anchor="middle">lower</text>
+<text transform="translate(343.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">Pairs kept</text>
+<text x="347.0" y="242" font-size="10" fill="#898781" text-anchor="middle">higher</text>
+<text transform="translate(417.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">False pairs</text>
+<text x="421.0" y="242" font-size="10" fill="#898781" text-anchor="middle">lower</text>
+<text transform="translate(491.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">Direction</text>
+<text x="495.0" y="242" font-size="10" fill="#898781" text-anchor="middle">lower</text>
+<text transform="translate(565.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">Deform-15</text>
+<text x="569.0" y="242" font-size="10" fill="#898781" text-anchor="middle">lower</text>
+<text transform="translate(639.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">Deform-all</text>
+<text x="643.0" y="242" font-size="10" fill="#898781" text-anchor="middle">lower</text>
+<text transform="translate(713.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">Ortho-15</text>
+<text x="717.0" y="242" font-size="10" fill="#898781" text-anchor="middle">lower</text>
+<text transform="translate(787.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">Ortho-all</text>
+<text x="791.0" y="242" font-size="10" fill="#898781" text-anchor="middle">lower</text>
+<text transform="translate(861.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">Roughness</text>
+<text x="865.0" y="242" font-size="10" fill="#898781" text-anchor="middle">lower</text>
+<text transform="translate(935.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">Shape IoU</text>
+<text x="939.0" y="242" font-size="10" fill="#898781" text-anchor="middle">higher</text>
+<text transform="translate(1009.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">States split</text>
+<text x="1013.0" y="242" font-size="10" fill="#898781" text-anchor="middle">lower</text>
+<text transform="translate(1083.0,126) rotate(-35)" font-size="11.5" fill="#0b0b0b">Borders kept</text>
+<text x="1087.0" y="242" font-size="10" fill="#898781" text-anchor="middle">higher</text>
+<text x="228" y="242" font-size="10" fill="#898781" text-anchor="end">better is</text>
+<text x="228" y="155.0" font-size="12" fill="#0b0b0b" text-anchor="end">generator-default</text>
+<g><title>generator-default: Location: mean cell displacement, hex steps = 5.00</title><rect x="237.0" y="137.0" width="72" height="28" rx="3" fill="#5598e7"/><text x="273.0" y="155.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">5.00</text></g>
+<g><title>generator-default: Adjacency: map neighbour pairs kept = 6206</title><rect x="311.0" y="137.0" width="72" height="28" rx="3" fill="#184f95"/><text x="347.0" y="155.0" font-size="11.5" fill="#ffffff" text-anchor="middle">6206</text></g>
+<g><title>generator-default: Adjacency: hex pairs that aren't map neighbours = 2902</title><rect x="385.0" y="137.0" width="72" height="28" rx="3" fill="#9ec5f4"/><text x="421.0" y="155.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">2902</text></g>
+<g><title>generator-default: Direction: mean angle error, degrees = 25.2</title><rect x="459.0" y="137.0" width="72" height="28" rx="3" fill="#184f95"/><text x="495.0" y="155.0" font-size="11.5" fill="#ffffff" text-anchor="middle">25.2</text></g>
+<g><title>generator-default: Deform-15 (local), mean = 1.17</title><rect x="533.0" y="137.0" width="72" height="28" rx="3" fill="#184f95"/><text x="569.0" y="155.0" font-size="11.5" fill="#ffffff" text-anchor="middle">1.17</text></g>
+<g><title>generator-default: Deform-all (global), mean = 55.02</title><rect x="607.0" y="137.0" width="72" height="28" rx="3" fill="#3987e5"/><text x="643.0" y="155.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">55.02</text></g>
+<g><title>generator-default: OrthoOrder-15 (local), mean flips of 30 = 1.69</title><rect x="681.0" y="137.0" width="72" height="28" rx="3" fill="#256abf"/><text x="717.0" y="155.0" font-size="11.5" fill="#ffffff" text-anchor="middle">1.69</text></g>
+<g><title>generator-default: OrthoOrder-all (global), mean flips = 210.6</title><rect x="755.0" y="137.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="791.0" y="155.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">210.6</text></g>
+<g><title>generator-default: Compactness: roughness = 0.99</title><rect x="829.0" y="137.0" width="72" height="28" rx="3" fill="#184f95"/><text x="865.0" y="155.0" font-size="11.5" fill="#ffffff" text-anchor="middle">0.99</text></g>
+<g><title>generator-default: Shape: footprint IoU with the map = 0.529</title><rect x="903.0" y="137.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="939.0" y="155.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">0.529</text></g>
+<g><title>generator-default: States split = 9</title><rect x="977.0" y="137.0" width="72" height="28" rx="3" fill="#9ec5f4"/><text x="1013.0" y="155.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">9</text></g>
+<g><title>generator-default: State borders kept = 106</title><rect x="1051.0" y="137.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="1087.0" y="155.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">106</text></g>
+<text x="228" y="185.0" font-size="12" fill="#0b0b0b" text-anchor="end">meulemans-states-p5-d5-s1</text>
+<g><title>meulemans-states-p5-d5-s1: Location: mean cell displacement, hex steps = 4.76</title><rect x="237.0" y="167.0" width="72" height="28" rx="3" fill="#184f95"/><text x="273.0" y="185.0" font-size="11.5" fill="#ffffff" text-anchor="middle">4.76</text></g>
+<g><title>meulemans-states-p5-d5-s1: Adjacency: map neighbour pairs kept = 6039</title><rect x="311.0" y="167.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="347.0" y="185.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">6039</text></g>
+<g><title>meulemans-states-p5-d5-s1: Adjacency: hex pairs that aren't map neighbours = 2822</title><rect x="385.0" y="167.0" width="72" height="28" rx="3" fill="#184f95"/><text x="421.0" y="185.0" font-size="11.5" fill="#ffffff" text-anchor="middle">2822</text></g>
+<g><title>meulemans-states-p5-d5-s1: Direction: mean angle error, degrees = 27.9</title><rect x="459.0" y="167.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="495.0" y="185.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">27.9</text></g>
+<g><title>meulemans-states-p5-d5-s1: Deform-15 (local), mean = 1.43</title><rect x="533.0" y="167.0" width="72" height="28" rx="3" fill="#6da7ec"/><text x="569.0" y="185.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">1.43</text></g>
+<g><title>meulemans-states-p5-d5-s1: Deform-all (global), mean = 50.11</title><rect x="607.0" y="167.0" width="72" height="28" rx="3" fill="#184f95"/><text x="643.0" y="185.0" font-size="11.5" fill="#ffffff" text-anchor="middle">50.11</text></g>
+<g><title>meulemans-states-p5-d5-s1: OrthoOrder-15 (local), mean flips of 30 = 2.10</title><rect x="681.0" y="167.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="717.0" y="185.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">2.10</text></g>
+<g><title>meulemans-states-p5-d5-s1: OrthoOrder-all (global), mean flips = 179.1</title><rect x="755.0" y="167.0" width="72" height="28" rx="3" fill="#1c5cab"/><text x="791.0" y="185.0" font-size="11.5" fill="#ffffff" text-anchor="middle">179.1</text></g>
+<g><title>meulemans-states-p5-d5-s1: Compactness: roughness = 2.53</title><rect x="829.0" y="167.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="865.0" y="185.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">2.53</text></g>
+<g><title>meulemans-states-p5-d5-s1: Shape: footprint IoU with the map = 0.553</title><rect x="903.0" y="167.0" width="72" height="28" rx="3" fill="#184f95"/><text x="939.0" y="185.0" font-size="11.5" fill="#ffffff" text-anchor="middle">0.553</text></g>
+<g><title>meulemans-states-p5-d5-s1: States split = 0</title><rect x="977.0" y="167.0" width="72" height="28" rx="3" fill="#184f95"/><text x="1013.0" y="185.0" font-size="11.5" fill="#ffffff" text-anchor="middle">0</text></g>
+<g><title>meulemans-states-p5-d5-s1: State borders kept = 107</title><rect x="1051.0" y="167.0" width="72" height="28" rx="3" fill="#184f95"/><text x="1087.0" y="185.0" font-size="11.5" fill="#ffffff" text-anchor="middle">107</text></g>
+<text x="228" y="215.0" font-size="12" fill="#0b0b0b" text-anchor="end">meulemans-nostates-p5-d5-s1</text>
+<g><title>meulemans-nostates-p5-d5-s1: Location: mean cell displacement, hex steps = 5.24</title><rect x="237.0" y="197.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="273.0" y="215.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">5.24</text></g>
+<g><title>meulemans-nostates-p5-d5-s1: Adjacency: map neighbour pairs kept = 6088</title><rect x="311.0" y="197.0" width="72" height="28" rx="3" fill="#86b6ef"/><text x="347.0" y="215.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">6088</text></g>
+<g><title>meulemans-nostates-p5-d5-s1: Adjacency: hex pairs that aren't map neighbours = 2919</title><rect x="385.0" y="197.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="421.0" y="215.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">2919</text></g>
+<g><title>meulemans-nostates-p5-d5-s1: Direction: mean angle error, degrees = 25.6</title><rect x="459.0" y="197.0" width="72" height="28" rx="3" fill="#1c5cab"/><text x="495.0" y="215.0" font-size="11.5" fill="#ffffff" text-anchor="middle">25.6</text></g>
+<g><title>meulemans-nostates-p5-d5-s1: Deform-15 (local), mean = 1.58</title><rect x="533.0" y="197.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="569.0" y="215.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">1.58</text></g>
+<g><title>meulemans-nostates-p5-d5-s1: Deform-all (global), mean = 61.67</title><rect x="607.0" y="197.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="643.0" y="215.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">61.67</text></g>
+<g><title>meulemans-nostates-p5-d5-s1: OrthoOrder-15 (local), mean flips of 30 = 1.56</title><rect x="681.0" y="197.0" width="72" height="28" rx="3" fill="#184f95"/><text x="717.0" y="215.0" font-size="11.5" fill="#ffffff" text-anchor="middle">1.56</text></g>
+<g><title>meulemans-nostates-p5-d5-s1: OrthoOrder-all (global), mean flips = 174.1</title><rect x="755.0" y="197.0" width="72" height="28" rx="3" fill="#184f95"/><text x="791.0" y="215.0" font-size="11.5" fill="#ffffff" text-anchor="middle">174.1</text></g>
+<g><title>meulemans-nostates-p5-d5-s1: Compactness: roughness = 1.62</title><rect x="829.0" y="197.0" width="72" height="28" rx="3" fill="#3987e5"/><text x="865.0" y="215.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">1.62</text></g>
+<g><title>meulemans-nostates-p5-d5-s1: Shape: footprint IoU with the map = 0.540</title><rect x="903.0" y="197.0" width="72" height="28" rx="3" fill="#5598e7"/><text x="939.0" y="215.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">0.540</text></g>
+<g><title>meulemans-nostates-p5-d5-s1: States split = 12</title><rect x="977.0" y="197.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="1013.0" y="215.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">12</text></g>
+<g><title>meulemans-nostates-p5-d5-s1: State borders kept = 106</title><rect x="1051.0" y="197.0" width="72" height="28" rx="3" fill="#cde2fb"/><text x="1087.0" y="215.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle">106</text></g>
+<text x="16" y="268" font-size="11" fill="#52514e">Units: location in hex steps; direction in degrees; Deform in hex steps²; Ortho in flipped relations; overlap in % of covered area at the worst frame.</text>
+<text x="16" y="286" font-size="11" fill="#52514e">Geometric scores are not reader performance: Schiewe 2021 found they did not match users’ judgements. Made by evidence/evaluate_layouts.py.</text>
+</svg>

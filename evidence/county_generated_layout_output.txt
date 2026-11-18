@@ -1,0 +1,2 @@
+3142 counties in 39.7 s; insets alaska 29 at scale 0.484 in 2 pieces, hawaii 5 at scale 0.823 in 4 pieces; tile components 7
+wrote evidence/data/county_generated_default.json

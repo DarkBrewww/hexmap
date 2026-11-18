@@ -1,0 +1,89 @@
+regions 3108, map neighbour pairs 8732 (1222 across state lines), state borders 107, layouts 3
+
+Checks
+  no reference numbers for these regions and layouts, so nothing to recompute
+
+Headline metrics
+                                    Location     Pairs kept    False pairs      Direction      Deform-15     Deform-all       Ortho-15      Ortho-all      Roughness      Shape IoU   States split   Borders kept
+generator-default                       4.85           6170           2882           25.2           1.00          52.41           1.69          210.1           0.71          0.538              7            106
+meulemans-states-p5-d5-s1               4.58           6009           2799           27.8           1.42          47.51           2.10          175.0           2.24          0.561              0            107
+meulemans-nostates-p5-d5-s1             5.06           6058           2896           25.6           1.56          57.75           1.55          163.1           1.32          0.541             12            106
+
+Distributions over regions (mean / median / p90 / max)
+  Location, hex steps
+    generator-default             4.85 / 4.13 / 7.71 / 19.92
+    meulemans-states-p5-d5-s1     4.58 / 3.63 / 8.35 / 20.61
+    meulemans-nostates-p5-d5-s1   5.06 / 4.37 / 7.88 / 22.67
+  Share of own neighbours kept
+    generator-default             0.71 / 0.71 / 1.00 / 1.00
+    meulemans-states-p5-d5-s1     0.70 / 0.71 / 1.00 / 1.00
+    meulemans-nostates-p5-d5-s1   0.70 / 0.71 / 1.00 / 1.00
+  False neighbours per region
+    generator-default             1.85 / 2.00 / 3.00 / 6.00
+    meulemans-states-p5-d5-s1     1.80 / 2.00 / 3.00 / 6.00
+    meulemans-nostates-p5-d5-s1   1.86 / 2.00 / 3.00 / 6.00
+  Direction error per pair, deg
+    generator-default             25.2 / 20.9 / 54.7 / 104.7
+    meulemans-states-p5-d5-s1     27.8 / 22.8 / 59.3 / 174.8
+    meulemans-nostates-p5-d5-s1   25.6 / 21.2 / 54.6 / 175.9
+  Guide-Dev (share of cell outside the map)
+    generator-default             0.148 / 0.000 / 1.000 / 1.000
+    meulemans-states-p5-d5-s1     0.102 / 0.000 / 0.492 / 1.000
+    meulemans-nostates-p5-d5-s1   0.141 / 0.000 / 1.000 / 1.000
+  Deform-5
+    generator-default             0.666 / 0.475 / 1.213 / 17.991
+    meulemans-states-p5-d5-s1     1.019 / 0.517 / 1.915 / 48.796
+    meulemans-nostates-p5-d5-s1   1.082 / 0.464 / 1.254 / 151.853
+  Deform-15
+    generator-default             1.002 / 0.661 / 1.782 / 21.860
+    meulemans-states-p5-d5-s1     1.416 / 0.735 / 2.951 / 60.865
+    meulemans-nostates-p5-d5-s1   1.564 / 0.613 / 2.106 / 149.571
+  Deform-50
+    generator-default             1.970 / 1.211 / 3.727 / 48.610
+    meulemans-states-p5-d5-s1     2.189 / 1.238 / 4.539 / 56.458
+    meulemans-nostates-p5-d5-s1   2.847 / 1.028 / 5.065 / 169.573
+  Deform-100
+    generator-default             3.306 / 1.901 / 7.000 / 64.362
+    meulemans-states-p5-d5-s1     2.855 / 1.703 / 5.767 / 50.287
+    meulemans-nostates-p5-d5-s1   4.315 / 1.557 / 8.970 / 173.632
+  Deform-all
+    generator-default             52.413 / 47.948 / 72.970 / 154.452
+    meulemans-states-p5-d5-s1     47.515 / 44.340 / 62.880 / 176.715
+    meulemans-nostates-p5-d5-s1   57.748 / 54.466 / 77.906 / 167.661
+  OrthoOrder-5
+    generator-default             0.83 / 1.00 / 2.00 / 5.00
+    meulemans-states-p5-d5-s1     0.99 / 1.00 / 2.00 / 5.00
+    meulemans-nostates-p5-d5-s1   0.78 / 1.00 / 2.00 / 6.00
+  OrthoOrder-15
+    generator-default             1.69 / 1.00 / 3.00 / 10.00
+    meulemans-states-p5-d5-s1     2.10 / 2.00 / 4.00 / 14.00
+    meulemans-nostates-p5-d5-s1   1.55 / 1.00 / 3.00 / 17.00
+  OrthoOrder-50
+    generator-default             4.56 / 4.00 / 9.00 / 27.00
+    meulemans-states-p5-d5-s1     5.64 / 5.00 / 11.00 / 40.00
+    meulemans-nostates-p5-d5-s1   4.12 / 3.00 / 9.00 / 51.00
+  OrthoOrder-100
+    generator-default             8.49 / 6.00 / 17.00 / 51.00
+    meulemans-states-p5-d5-s1     10.06 / 8.00 / 19.00 / 73.00
+    meulemans-nostates-p5-d5-s1   7.60 / 5.00 / 16.00 / 79.00
+  OrthoOrder-all
+    generator-default             210.12 / 184.00 / 378.00 / 807.00
+    meulemans-states-p5-d5-s1     175.02 / 151.00 / 292.00 / 940.00
+    meulemans-nostates-p5-d5-s1   163.12 / 139.00 / 270.00 / 744.00
+
+Other per-layout numbers
+  generator-default             location RMS 5.91 (worst 06023), pairs lost 2562, omission 0.293, commission 0.318, isolated tiles 0, pairs over 90 deg 35, tile components 1, cells outside map 0.148, cells fully outside 0.116, states split [DE FL MD NY OK PA WV], new state contacts 11
+  meulemans-states-p5-d5-s1     location RMS 5.73 (worst 41007), pairs lost 2723, omission 0.312, commission 0.318, isolated tiles 0, pairs over 90 deg 125, tile components 1, cells outside map 0.099, cells fully outside 0.068, states split [], new state contacts 0
+  meulemans-nostates-p5-d5-s1   location RMS 6.35 (worst 53055), pairs lost 2674, omission 0.306, commission 0.323, isolated tiles 0, pairs over 90 deg 17, tile components 1, cells outside map 0.142, cells fully outside 0.112, states split [FL ID LA MA MD MN NH NV NY OK PA WV], new state contacts 12
+
+Pareto-optimal on the 12 headline metrics: generator-default, meulemans-states-p5-d5-s1, meulemans-nostates-p5-d5-s1
+Best (or tied best) per layout:
+  generator-default             4 of 12: Pairs kept, Direction, Deform-15, Roughness
+  meulemans-states-p5-d5-s1     6 of 12: Location, False pairs, Deform-all, Shape IoU, States split, Borders kept
+  meulemans-nostates-p5-d5-s1   2 of 12: Ortho-15, Ortho-all
+
+Head to head: row layout better than column layout on how many of the 12 headline metrics (ties count for neither)
+                                  1     2     3
+1 generator-default               -     5     8
+2 meulemans-states-p5-d5-s1       7     -     7
+3 meulemans-nostates-p5-d5-s1     3     5     -

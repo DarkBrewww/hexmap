@@ -1,0 +1,356 @@
+Picked up JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=JKS -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=36181 -Dhttp.nonProxyHosts=localhost|127.0.0.1|::1|127.*|0.*|::|169.254.*|api.anthropic.com|api-staging.anthropic.com|api-pr-preview.anthropic.com|mcp-proxy.anthropic.com|mcp-proxy-staging.anthropic.com|registry.npmjs.org|jsr.io|npm.jsr.io|pypi.org|files.pythonhosted.org|index.crates.io|proxy.golang.org|host.docker.internal|10.*|172.16.*|172.17.*|172.18.*|172.19.*|172.20.*|172.21.*|172.22.*|172.23.*|172.24.*|172.25.*|172.26.*|172.27.*|172.28.*|172.29.*|172.30.*|172.31.*|192.168.*|100.64.0.0/10|*.svc.cluster.local|*.svc.cluster.local -Djdk.http.auth.tunneling.disabledSchemes= -Djdk.http.auth.proxying.disabledSchemes=
+------ RUNNING PARTITION ---------------------------
+  p = 5, d = 5.0, ct = COMBINED
+Finding cuts
+  622 cuts found
+  247 cuts remaining
+Performing cuts
+  3 applied
+Construction new partitions
+Finding cuts
+  75 cuts found
+  14 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  167 cuts found
+  23 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  79 cuts found
+  0 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  306 cuts found
+  18 cuts remaining
+Performing cuts
+  1 applied
+Construction new partitions
+Finding cuts
+  21 cuts found
+  0 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  316 cuts found
+  121 cuts remaining
+Performing cuts
+  2 applied
+Construction new partitions
+Finding cuts
+  152 cuts found
+  0 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  132 cuts found
+  0 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  198 cuts found
+  14 cuts remaining
+Performing cuts
+  1 applied
+Construction new partitions
+Finding cuts
+  183 cuts found
+  0 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  136 cuts found
+  3 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  46 cuts found
+  0 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  215 cuts found
+  21 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  348 cuts found
+  109 cuts remaining
+Performing cuts
+  1 applied
+Construction new partitions
+Finding cuts
+  107 cuts found
+  53 cuts remaining
+Performing cuts
+  1 applied
+Construction new partitions
+Finding cuts
+  217 cuts found
+  101 cuts remaining
+Performing cuts
+  2 applied
+Construction new partitions
+Finding cuts
+  219 cuts found
+  20 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  458 cuts found
+  162 cuts remaining
+Performing cuts
+  3 applied
+Construction new partitions
+Finding cuts
+  186 cuts found
+  3 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  190 cuts found
+  4 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  220 cuts found
+  42 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  180 cuts found
+  0 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  286 cuts found
+  117 cuts remaining
+Performing cuts
+  3 applied
+Construction new partitions
+Finding cuts
+  48 cuts found
+  0 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  92 cuts found
+  0 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  62 cuts found
+  0 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  77 cuts found
+  9 cuts remaining
+Performing cuts
+  1 applied
+Construction new partitions
+Finding cuts
+  23 cuts found
+  0 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  35 cuts found
+  0 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  189 cuts found
+  53 cuts remaining
+Performing cuts
+  1 applied
+Construction new partitions
+Finding cuts
+  141 cuts found
+  0 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  130 cuts found
+  7 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  154 cuts found
+  0 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  72 cuts found
+  0 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  125 cuts found
+  0 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  71 cuts found
+  8 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  166 cuts found
+  9 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  579 cuts found
+  69 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  21 cuts found
+  0 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  232 cuts found
+  43 cuts remaining
+Performing cuts
+  2 applied
+Construction new partitions
+Finding cuts
+  74 cuts found
+  0 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  290 cuts found
+  93 cuts remaining
+Performing cuts
+  1 applied
+Construction new partitions
+Finding cuts
+  208 cuts found
+  21 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  177 cuts found
+  40 cuts remaining
+Performing cuts
+  0 applied
+Finding cuts
+  16 cuts found
+  0 cuts remaining
+Performing cuts
+  0 applied
+PARTS 73
+------ DEFORMING INTO CARTOGRAM -------------------
+  grid = HEXAGON
+Computing cartogram for 4 regions, 29 tiles
+  Scaling = 1
+  Finalizing
+Computing cartogram for 68 regions, 3108 tiles
+  Scaling = 4.57
+  Scaling = 3.23
+Nov 18, 2026 4:06:26 PM arrange.algorithms.GuideConstructor compute
+SEVERE: null
+java.util.concurrent.ExecutionException: java.lang.RuntimeException: Construction is running around in circles: probably the grid geometry is not precise enough?
+	at java.base/java.util.concurrent.FutureTask.report(FutureTask.java:122)
+	at java.base/java.util.concurrent.FutureTask.get(FutureTask.java:191)
+	at arrange.algorithms.GuideConstructor.compute(GuideConstructor.java:260)
+	at arrange.model.MosaicCartogram.initializeGuidingShapes(MosaicCartogram.java:217)
+	at arrange.DeformAlgorithm.runRound(DeformAlgorithm.java:173)
+	at arrange.DeformAlgorithm.run(DeformAlgorithm.java:127)
+	at arrange.DeformAlgorithm.run(DeformAlgorithm.java:51)
+	at ownmap.RunPipeline.main(RunPipeline.java:68)
+Caused by: java.lang.RuntimeException: Construction is running around in circles: probably the grid geometry is not precise enough?
+	at arrange.algorithms.sub.QualityMapConstruction.constructIntersections(QualityMapConstruction.java:301)
+	at arrange.algorithms.sub.QualityMapConstruction.construct(QualityMapConstruction.java:486)
+	at arrange.algorithms.GuideConstructor.constructQualityMap(GuideConstructor.java:53)
+	at arrange.algorithms.GuideConstructor$TestOffset.compute(GuideConstructor.java:285)
+	at arrange.algorithms.GuideConstructor$TestOffset.call(GuideConstructor.java:316)
+	at arrange.algorithms.GuideConstructor$TestOffset.call(GuideConstructor.java:275)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+  Scaling = 2.29
+  Scaling = 1.62
+  Scaling = 1
+Nov 18, 2026 4:06:46 PM arrange.algorithms.GuideConstructor compute
+SEVERE: null
+java.util.concurrent.ExecutionException: java.lang.RuntimeException: Construction is running around in circles: probably the grid geometry is not precise enough?
+	at java.base/java.util.concurrent.FutureTask.report(FutureTask.java:122)
+	at java.base/java.util.concurrent.FutureTask.get(FutureTask.java:191)
+	at arrange.algorithms.GuideConstructor.compute(GuideConstructor.java:260)
+	at arrange.model.MosaicCartogram.initializeGuidingShapes(MosaicCartogram.java:217)
+	at arrange.DeformAlgorithm.runRound(DeformAlgorithm.java:173)
+	at arrange.DeformAlgorithm.run(DeformAlgorithm.java:139)
+	at arrange.DeformAlgorithm.run(DeformAlgorithm.java:51)
+	at ownmap.RunPipeline.main(RunPipeline.java:68)
+Caused by: java.lang.RuntimeException: Construction is running around in circles: probably the grid geometry is not precise enough?
+	at arrange.algorithms.sub.QualityMapConstruction.constructIntersections(QualityMapConstruction.java:301)
+	at arrange.algorithms.sub.QualityMapConstruction.construct(QualityMapConstruction.java:486)
+	at arrange.algorithms.GuideConstructor.constructQualityMap(GuideConstructor.java:53)
+	at arrange.algorithms.GuideConstructor$TestOffset.compute(GuideConstructor.java:285)
+	at arrange.algorithms.GuideConstructor$TestOffset.call(GuideConstructor.java:316)
+	at arrange.algorithms.GuideConstructor$TestOffset.call(GuideConstructor.java:275)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+Nov 18, 2026 4:06:46 PM arrange.algorithms.GuideConstructor compute
+SEVERE: null
+java.util.concurrent.ExecutionException: java.lang.RuntimeException: Construction is running around in circles: probably the grid geometry is not precise enough?
+	at java.base/java.util.concurrent.FutureTask.report(FutureTask.java:122)
+	at java.base/java.util.concurrent.FutureTask.get(FutureTask.java:191)
+	at arrange.algorithms.GuideConstructor.compute(GuideConstructor.java:260)
+	at arrange.model.MosaicCartogram.initializeGuidingShapes(MosaicCartogram.java:217)
+	at arrange.DeformAlgorithm.runRound(DeformAlgorithm.java:173)
+	at arrange.DeformAlgorithm.run(DeformAlgorithm.java:139)
+	at arrange.DeformAlgorithm.run(DeformAlgorithm.java:51)
+	at ownmap.RunPipeline.main(RunPipeline.java:68)
+Caused by: java.lang.RuntimeException: Construction is running around in circles: probably the grid geometry is not precise enough?
+	at arrange.algorithms.sub.QualityMapConstruction.constructIntersections(QualityMapConstruction.java:301)
+	at arrange.algorithms.sub.QualityMapConstruction.construct(QualityMapConstruction.java:486)
+	at arrange.algorithms.GuideConstructor.constructQualityMap(GuideConstructor.java:53)
+	at arrange.algorithms.GuideConstructor$TestOffset.compute(GuideConstructor.java:285)
+	at arrange.algorithms.GuideConstructor$TestOffset.call(GuideConstructor.java:316)
+	at arrange.algorithms.GuideConstructor$TestOffset.call(GuideConstructor.java:275)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+  Finalizing
+Warning: holes remaining
+Computing cartogram for 1 regions, 5 tiles
+  Using guiding shape
+------ ASSIGNING TO CELLS --------------------------
+  alignment = Uniform-Agnostic, refine = null
+Total sq. Euclidean distance: 6011.149311641424
+Root mean sq. Euclidean distance: 1.3831703395825472
+------ COMBINING OUTLINES --------------------------
+  method = AgglomerativeAssigned
+TOTAL_SECONDS 46.12
+------ TIMINGS -----------------------------
+NAME         TOTAL  COUNT    AVERAGE
+partition     2618        1   2618
+- cuts        2503       46     54
+- init          87       46      1
+- perform        4       46      0
+- construct     18       46      0
+deform       41818        1  41818
+- embedder      21        2     10
+- guides      3331        7    475
+- slides        25        6      4
+- force      10184    48577      0
+- reshape    25305    48577      0
+- finalizer   2544        2   1272
+assign        1655        1   1655
+- solve       1620       72     22
+combine         14        1     14
+--------------------------------------------

@@ -1,0 +1,60 @@
+Picked up JAVA_TOOL_OPTIONS: -Xmx6g
+------ RUNNING PARTITION ---------------------------
+  p = 5, d = 5.0, ct = COMBINED
+Finding cuts
+  2978 cuts found
+  747 cuts remaining
+Performing cuts
+  11 applied
+Construction new partitions
+Finding cuts
+  622 cuts found
+  247 cuts remaining
+Performing cuts
+  3 applied
+Construction new partitions
+PARTS 17
+------ DEFORMING INTO CARTOGRAM -------------------
+  grid = HEXAGON
+Computing cartogram for 12 regions, 3108 tiles
+  Scaling = 25.90
+  Scaling = 18.31
+  Scaling = 12.95
+  Scaling = 9.16
+  Scaling = 6.48
+  Scaling = 4.58
+  Scaling = 3.24
+  Scaling = 2.29
+  Scaling = 1.62
+  Scaling = 1
+  Finalizing
+Computing cartogram for 4 regions, 29 tiles
+  Scaling = 1
+  Finalizing
+Computing cartogram for 1 regions, 5 tiles
+  Using guiding shape
+------ ASSIGNING TO CELLS --------------------------
+  alignment = Uniform-Agnostic, refine = null
+Total sq. Euclidean distance: 290334.1150838615
+Root mean sq. Euclidean distance: 9.61271230056058
+------ COMBINING OUTLINES --------------------------
+  method = AgglomerativeAssigned
+TOTAL_SECONDS 1810.55
+------ TIMINGS -----------------------------
+NAME         TOTAL    COUNT    AVERAGE
+partition       9064        1     9064
+- cuts          8538        2     4269
+- init           326        2      163
+- perform          0        2        0
+- construct      199        2       99
+deform          8400        1     8400
+- embedder         8        2        4
+- guides        1450       12      120
+- slides          20       11        1
+- force         1438    68037        0
+- reshape       5276    68037        0
+- finalizer       48        2       24
+assign       1793058        1  1793058
+- solve      1791721       17   105395
+combine           11        1       11
+--------------------------------------------
