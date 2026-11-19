@@ -96,7 +96,7 @@ def stats(values):
         lo = math.floor(x)
         hi = min(lo + 1, n - 1)
         return v[lo] + (v[hi] - v[lo]) * (x - lo)
-    return {"mean": sum(v) / n, "median": pct(0.5), "p90": pct(0.9), "max": v[-1]}
+    return {"mean": math.fsum(v) / n, "median": pct(0.5), "p90": pct(0.9), "max": v[-1]}
 
 
 def hex_pairs(lay):
@@ -210,10 +210,10 @@ def fit_location(ctx, lay):
     P = [lay["cells"][i]["xy"] for i in ctx.ids]
     C = [ctx.center[i] for i in ctx.ids]
     n = len(P)
-    pm = (sum(p[0] for p in P) / n, sum(p[1] for p in P) / n)
-    cm = (sum(c[0] for c in C) / n, sum(c[1] for c in C) / n)
-    num = sum((p[0] - pm[0]) * (c[0] - cm[0]) + (p[1] - pm[1]) * (c[1] - cm[1]) for p, c in zip(P, C))
-    den = sum((p[0] - pm[0]) ** 2 + (p[1] - pm[1]) ** 2 for p in P)
+    pm = (math.fsum(p[0] for p in P) / n, math.fsum(p[1] for p in P) / n)
+    cm = (math.fsum(c[0] for c in C) / n, math.fsum(c[1] for c in C) / n)
+    num = math.fsum((p[0] - pm[0]) * (c[0] - cm[0]) + (p[1] - pm[1]) * (c[1] - cm[1]) for p, c in zip(P, C))
+    den = math.fsum((p[0] - pm[0]) ** 2 + (p[1] - pm[1]) ** 2 for p in P)
     s = num / den
     t = (cm[0] - s * pm[0], cm[1] - s * pm[1])
     placed = {i: (s * p[0] + t[0], s * p[1] + t[1]) for i, p in zip(ctx.ids, P)}
@@ -271,7 +271,7 @@ def evaluate(ctx, lay):
     s, placed, disp = fit_location(ctx, lay)
     for k, v in stats(disp.values()).items():
         out["loc_" + k] = v
-    out["loc_rms"] = math.sqrt(sum(v * v for v in disp.values()) / ctx.n)
+    out["loc_rms"] = math.sqrt(math.fsum(v * v for v in disp.values()) / ctx.n)
     out["loc_worst"] = max(ctx.ids, key=lambda i: disp[i])
     for i in ctx.ids:
         per[i]["displacement"] = disp[i]
@@ -311,7 +311,7 @@ def evaluate(ctx, lay):
     out["dir_over_90"] = sum(e > 90 for e in errs)
     for i in ctx.ids:
         if err_by_region[i]:
-            per[i]["direction_error_mean"] = sum(err_by_region[i]) / len(err_by_region[i])
+            per[i]["direction_error_mean"] = math.fsum(err_by_region[i]) / len(err_by_region[i])
 
     # 4. multi-scale: Deform-k and OrthoOrder-k (Meulemans 2026)
     for k in KS:
@@ -388,7 +388,7 @@ def shape_scores(ctx, lay, s, placed):
         a, b = fmap.intervals_at(y), fhex.intervals_at(y)
         both = overlap_len(a, b)
         inter += both
-        union += sum(q - p for p, q in a) + sum(q - p for p, q in b) - both
+        union += math.fsum(q - p for p, q in a) + math.fsum(q - p for p, q in b) - both
     outside = 0
     for x, y in placed.values():
         if not any(p <= x <= q for p, q in fmap.intervals_at(y)):
@@ -429,9 +429,9 @@ def morph_summary(path):
         m = out[layout]
         m[method + "_overlap_peak"] = ov[peak]
         m[method + "_overlap_peak_t"] = float(rows[peak]["t"])
-        m[method + "_overlap_mean"] = sum(ov) / len(ov)
+        m[method + "_overlap_mean"] = math.fsum(ov) / len(ov)
         m[method + "_crossing_peak"] = max(cr)
-        m[method + "_area_change_mean"] = sum(ar) / len(ar)
+        m[method + "_area_change_mean"] = math.fsum(ar) / len(ar)
         m[method + "_area_change_peak"] = max(ar)
         m[method + "_frames"] = len(rows)
     return out
